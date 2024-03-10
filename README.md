@@ -1,15 +1,27 @@
 # action-nexus-publish
+
 Publishing action for Nexus
 
+## Preparing GPG key
+
+See [Sonatype's instructions](https://central.sonatype.org/publish/requirements/gpg/).
+
+
+
+
+## Using the Action
+
 <!-- action-docs-description -->
-## Description
+
+### Description
 
 Publishing Maven artifacts to Nexus (Maven Central).
 
 <!-- action-docs-description -->
 
 <!-- action-docs-inputs -->
-## Inputs
+
+### Inputs
 
 | parameter | description | required | default |
 | --- | --- | --- | --- |
@@ -21,14 +33,13 @@ FIXME: signing key encoding
 <!-- action-docs-inputs -->
 
 
-
-
 <!-- action-docs-outputs -->
 
 <!-- action-docs-outputs -->
 
 <!-- action-docs-runs -->
-## Runs
+
+### Runs
 
 This action is a `composite` action.
 <!-- action-docs-runs -->
