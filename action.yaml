@@ -22,6 +22,9 @@ runs:
     - name: run publisher
       shell: bash
       run: |-
+        echo "PWD" ; pwd
+        echo "LS" ; ls -la
+        echo "LS AP" ; ls -la ${{ github.action_path }}
         java -version
         java ${{ github.action_path }}/src/main/NexusPublisher.java arg1 arg2 argN
       env:
