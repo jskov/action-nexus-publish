@@ -27,7 +27,7 @@ runs:
         echo "LS" ; ls -la
         echo "LS AP" ; ls -la ${{ github.action_path }}
         java -version
-        java --source 21 ${{ github.action_path }}/src/main/NexusPublisher.java arg1 arg2 argN
+        java --source 21 ${{ github.action_path }}/src/main/java/NexusPublisher.java arg1 arg2 argN
       env:
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
