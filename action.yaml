@@ -23,6 +23,7 @@ runs:
       shell: bash
       run: |-
         echo "PWD" ; pwd
+        echo "AP ${{ github.action_path }}"
         echo "LS" ; ls -la
         echo "LS AP" ; ls -la ${{ github.action_path }}
         java -version
