@@ -1,0 +1,33 @@
+name: "nexus-publish"
+author: "Jesper Skov (jskov@mada.dk)"
+description: "Publish artifacts to Nexus"
+
+inputs:
+  signing_key:
+    required: true
+    description: "FIXME signing key"
+
+  signing_key_secret:
+    required: true
+    description: "FIXME secret"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+          java-version: '21'
+          distribution: 'temurin'
+
+    - name: run publisher
+      shell: bash
+      run: |-
+        echo "PWD" ; pwd
+        echo "AP ${{ github.action_path }}"
+        echo "LS" ; ls -la
+        echo "LS AP" ; ls -la ${{ github.action_path }}
+        java -version
+        java --source 21 ${{ github.action_path }}/src/main/java/NexusPublisher.java arg1 arg2 argN
+      env:
+        SIGNING_KEY: ${{ inputs.signing_key }}
+        SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
