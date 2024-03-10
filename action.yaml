@@ -1,4 +1,5 @@
 name: "nexus-publish"
+author: "Jesper Skov (jskov@mada.dk)"
 description: "Publish artifacts to Nexus"
 
 inputs:
@@ -21,7 +22,7 @@ runs:
     - name: run publisher
       shell: bash
       run: |-
-        java src/main/NexusPublisher.java arg1 arg2 argN
+        java ${{ github.action_path }}/src/main/NexusPublisher.java arg1 arg2 argN
       env:
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
