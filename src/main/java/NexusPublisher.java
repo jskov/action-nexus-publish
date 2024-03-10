@@ -1,3 +1,5 @@
+import java.nio.file.Paths;
+
 class NexusPublisher {
     public static void main(String[] args) {
         System.out.println("Args: " + args);
@@ -6,5 +8,8 @@ class NexusPublisher {
             .map(e -> " '" + e.getKey() + "=" + e.getValue() + "'")
             .sorted()
             .forEach(System.out::println);
+        
+        System.out.println("CWD: " + Paths.get(".").toAbsolutePath());
+        
     }
 }
