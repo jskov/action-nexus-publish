@@ -28,6 +28,8 @@ runs:
         echo "LS AP" ; ls -la ${{ github.action_path }}
         java -version
         classes_dir=$(mktemp -d)
+        echo "LS /tmp" ; ls -la /tmp
+        echo "LS $classes_dir" ; ls -la $classes_dir
         (cd src/main/java ; java -d $classes_dir *.java)
         ls -la $classes_dir
         java -cp $classes_dir NexusPublisher arg1 arg2 argN
