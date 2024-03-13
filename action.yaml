@@ -22,12 +22,10 @@ runs:
     - name: run publisher
       shell: bash
       run: |-
-        echo "PWD" ; pwd
-        echo "AP ${{ github.action_path }}"
-        echo "LS" ; ls -la
-        echo "LS AP" ; ls -la ${{ github.action_path }}
-        java -version
-        java --source 21 ${{ github.action_path }}/src/main/java/NexusPublisher.java arg1 arg2 argN
+        classes_dir=$(mktemp -d)
+        (cd ${{ github.action_path }}/src/main/java ; javac -d $classes_dir $(find . -name \*.java))
+        java -cp $classes_dir dk.mada.action.NexusPublisher arg1 arg2 argN
+        rm -rf $classes_dir
       env:
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}

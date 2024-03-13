@@ -1,0 +1,15 @@
+plugins {
+    id 'dk.mada.style' version '0.9.4'
+    id 'eclipse'
+    id 'java'
+}
+
+repositories {
+    repositories {
+        maven { url = uri("https://plugins.gradle.org/m2/") }
+    }
+    mavenCentral()
+}
+
+dependencies {
+}
