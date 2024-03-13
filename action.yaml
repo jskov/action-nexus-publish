@@ -1,6 +1,6 @@
-name: "nexus-publish"
+name: "action-maven-publish"
 author: "Jesper Skov (jskov@mada.dk)"
-description: "Publish artifacts to Nexus"
+description: "Publish maven artifacts to Nexus"
 
 inputs:
   signing_key:

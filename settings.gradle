@@ -5,4 +5,4 @@ pluginManagement {
         mavenLocal()
     }
 }
-rootProject.name='action-nexus-publish-maven'
+rootProject.name='action-maven-publish'
