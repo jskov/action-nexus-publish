@@ -27,7 +27,13 @@ runs:
         echo "LS" ; ls -la
         echo "LS AP" ; ls -la ${{ github.action_path }}
         java -version
-        java --source 21 ${{ github.action_path }}/src/main/java/NexusPublisher.java arg1 arg2 argN
+        classes_dir=$(mktemp -d)
+        (cd src/main/java ; java -d $classes_dir *.java)
+        ls -la $classes_dir
+        java -cp $classes_dir NexusPublisher arg1 arg2 argN
+# This works, but would like to avoid a big blob of code        
+#        java --source 21 ${{ github.action_path }}/src/main/java/NexusPublisher.java arg1 arg2 argN
+        echo rm -rf $classes_dir
       env:
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
