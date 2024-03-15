@@ -35,8 +35,7 @@ public final class GpgSigner {
             Files.writeString(keyFile, aa.gpgPrivateKey());
             System.out.println(">import");
 
-            List<String> importKeyCmd = List.of("gpg", "--import", "--batch", "--pinentry-mode", "loopback",
-                    keyFile.toAbsolutePath().toString());
+            List<String> importKeyCmd = List.of("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
             runCmd(importKeyCmd);
 
             System.out.println(">list public");
