@@ -1,4 +1,4 @@
-package dk.mada.action.sign;
+package dk.mada.action.signer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,24 +11,34 @@ import java.util.Map;
 
 import dk.mada.action.ActionArguments;
 
-public class GpgSigner {
-    // GNUPGHOME
-    public void go(ActionArguments aa) {
+public final class GpgSigner {
+    
+    private final Path gnupghomeDir;
+    private final Map<String, String> gpgEnv;
+
+    public GpgSigner() {
         try {
-            Path gnupghomeDir = Files.createTempDirectory("_gnupghome-",
+            gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
-            Map<String, String> env = Map.of(
+            gpgEnv = Map.of(
                     "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString()
                     );
-                    
-            List<String> args = List.of("gpg", "--version");
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
+        }
+    }
+
+    public void loadSigningCertificate(ActionArguments aa) {
+        try {
+            List<String> args = List.of("gpg", "-k");
             ProcessBuilder pb = new ProcessBuilder()
                 .command(args)
+                .redirectErrorStream(true)
                 .directory(gnupghomeDir.toFile());
-            pb.environment().putAll(env);
+            pb.environment().putAll(gpgEnv);
             Process p = pb.start();
             String output = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            System.out.println("See");
+            System.out.println("Exit " + p.exitValue());
             System.out.println(output);
         } catch (IOException e) {
             throw new IllegalStateException("Failed running GPG", e);
