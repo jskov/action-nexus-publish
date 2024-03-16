@@ -29,5 +29,5 @@ cat $GNUPGHOME/key_gen_args.txt | gpg -v --batch --gen-key
 keyGrp=$(gpg -K --with-keygrip --with-colons | grep grp | head -n 1 | cut -d: -f 10)
 rm $GNUPGHOME/private-keys-v1.d/${keyGrp}.key
 
-echo $dummyPassword | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --export-secret-subkeys -a  > src/test/resources/gpg-testkey.txt
+echo $dummyPassword | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --export-secret-keys -a  > src/test/resources/gpg-testkey.txt
 echo $dummyPassword > src/test/resources/gpg-testkey-password.txt
