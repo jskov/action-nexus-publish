@@ -10,8 +10,8 @@ import dk.mada.action.ActionArguments;
 /**
  * Fixture for creating action arguments for tests.
  */
-public final class ActionArgs {
-    private ActionArgs() {
+public final class ActionArgumentsFixture {
+    private ActionArgumentsFixture() {
     }
     
     public static ActionArguments withGpg() {
@@ -19,7 +19,7 @@ public final class ActionArgs {
     }
     
     private static String readResource(String path) {
-        try (InputStream is = ActionArgs.class.getResourceAsStream(path)) {
+        try (InputStream is = ActionArgumentsFixture.class.getResourceAsStream(path)) {
             if (is == null) {
                 throw new IllegalArgumentException("Failed to find resource from '" + path + "'");
             }
