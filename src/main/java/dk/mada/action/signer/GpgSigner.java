@@ -23,12 +23,15 @@ public final class GpgSigner {
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
             gpgEnv = Map.of(
-                    "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString(),
-                    "GPG_OPTS", "--pinentry-mode loopback"
-                    );
+                    "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
         }
+    }
+
+    /** {@return the created GNUPGHOME directory} */
+    public Path getGnupgHome() {
+        return gnupghomeDir;
     }
 
     /**
@@ -37,42 +40,25 @@ public final class GpgSigner {
      * After loading, the private certificate is tweaked to be ultimately trusted.
      *
      * @param actionArgs the action arguments
+     * @return the signature fingerprint
      */
-    public void loadSigningCertificate(ActionArguments actionArgs) {
+    public String loadSigningCertificate(ActionArguments actionArgs) {
         try {
-            System.out.println("TTY");
-            CmdResult ttyResult = runCmd(List.of("tty"));
-            System.out.println("See TTY: " + ttyResult.output());
-            
+            // Import the certificate
             Path keyFile = gnupghomeDir.resolve("private.txt");
             Files.writeString(keyFile, actionArgs.gpgPrivateKey());
-            System.out.println(">import");
+            runCmd("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
 
-            List<String> importKeyCmd = List.of("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
-            runCmd(importKeyCmd);
-
-            System.out.println(">list private");
-            runCmd(List.of("gpg", "-K"));
-
-            System.out.println("-----------------");
-            
-            List<String> idKeyCmd = List.of("gpg", "-K", "--with-colons");
-            CmdResult idResult = runCmd(idKeyCmd);
-
+            // Extract fingerprint of the certificate
+            CmdResult idResult = runCmd("gpg", "-K", "--with-colons");
             String fingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
-            System.out.println("Fingerprint: " + fingerprint);
 
             // Mark the certificate as ultimately trusted
             Path ownerTrustFile = gnupghomeDir.resolve("otrust.txt");
-            String ownerTrust = fingerprint + ":6:\n";
-            Files.writeString(ownerTrustFile, ownerTrust);
-            CmdResult newTrustResult = runCmd(List.of("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString()));
-            System.out.println("NEW: " + newTrustResult.output());
-            
-            System.out.println("-----------------");
+            Files.writeString(ownerTrustFile, fingerprint + ":6:\n");
+            runCmd("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
 
-            System.out.println(">list private");
-            runCmd(List.of("gpg", "-K"));
+            return fingerprint;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load private GPG key", e);
         }
@@ -84,6 +70,7 @@ public final class GpgSigner {
      * @see https://github.com/gpg/gnupg/blob/master/doc/DETAILS
      */
     enum GpgDetailType {
+        /** The certificate fingerprint. */
         FINGERPRINT("fpr");
 
         private final String prefix;
@@ -100,15 +87,15 @@ public final class GpgSigner {
          */
         public String extractFrom(String output) {
             return output.lines()
-            .filter(l -> l.startsWith(prefix))
-            .map(l -> l.substring(prefix.length() + 1))
-            .findFirst()
-            .orElseThrow();
+                    .filter(l -> l.startsWith(prefix))
+                    .map(l -> l.substring(prefix.length() + 1))
+                    .findFirst()
+                    .orElseThrow();
         }
     }
-    
-    private CmdResult runCmd(List<String> args) {
-        return runCmd(null, args, GPG_DEFAULT_TIMEOUT_SECONDS);
+
+    private CmdResult runCmd(String... args) {
+        return runCmd(null, List.of(args), GPG_DEFAULT_TIMEOUT_SECONDS);
     }
 
     private CmdResult runCmd(String stdin, List<String> command, int timeoutSeconds) {
