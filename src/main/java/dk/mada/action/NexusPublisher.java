@@ -16,7 +16,12 @@ class NexusPublisher {
         }
     }
 
-    public static void main() {
+    /**
+     * Action main method.
+     *
+     * @param args the arguments from the command line, ignored
+     */
+    public static void main(String[] args) {
         new NexusPublisher().run();
     }
 }
