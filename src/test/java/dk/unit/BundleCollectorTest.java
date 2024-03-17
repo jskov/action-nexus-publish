@@ -5,14 +5,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import dk.fixture.ActionArgumentsFixture;
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.action.GpgSigner;
 
 /**
  * Tests bundle collection - really the search for files.
@@ -21,6 +24,19 @@ class BundleCollectorTest {
     /** Temporary test directory. */
     private @TempDir Path testDir;
 
+    private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
+    private final BundleCollector sut = new BundleCollector(signer);
+
+    @Test
+    void canSignFiles() throws IOException {
+        Files.copy(Paths.get("gradle/wrapper/gradle-wrapper.jar"), testDir.resolve("bundle.jar"));
+        Files.createFile(testDir.resolve("bundle.pom"));
+        signer.loadSigningCertificate();
+        
+        List<Bundle> x = sut.buildBundles(testDir, List.of(".jar"));
+        System.out.println("GOt " + x);
+    }
+    
     @Test
     void canCollectBundle() throws IOException {
         setupFileTree(
@@ -30,7 +46,7 @@ class BundleCollectorTest {
                 "dir/a-sources.jar",
                 "dir/a.module");
 
-        List<Bundle> foundBundles = BundleCollector.collectBundles(testDir, List.of(".module", "-sources.jar"));
+        List<Bundle> foundBundles = new BundleCollector(null).collectBundles(testDir, List.of(".module", "-sources.jar"));
         List<String> foundPaths = foundBundles.stream()
                 .flatMap(b -> toPaths(b).stream())
                 .toList();

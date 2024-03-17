@@ -3,14 +3,39 @@ package dk.mada.action;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
+
+import dk.mada.action.util.DirectoryDeleter;
 
 /**
  * Collects bundles from disk for later signing/publishing.
  */
 public final class BundleCollector {
-    private BundleCollector() {
+    /** The GPG signer. */
+    private final GpgSigner signer;
+    /** The directory where bundles are built before upload. */
+    private final Path bundlesDir;
+
+    public BundleCollector(GpgSigner signer) {
+        this.signer = signer;
+
+        try {
+            bundlesDir = Files.createTempDirectory("_bundles-",
+                    PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to create bundles directory", e);
+        }
+    }
+
+    public List<Bundle> buildBundles(Path searchDir, List<String> companionSuffixes) {
+        List<Bundle> bundles = collectBundles(searchDir, companionSuffixes);
+        
+        bundles.forEach(this::signBundleFiles);
+        
+        return bundles;
     }
 
     /**
@@ -20,7 +45,7 @@ public final class BundleCollector {
      * @param companionSuffixes the suffixes to use for finding bundle assets
      * @return the collected bundles
      */
-    public static List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
+    public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
         try (Stream<Path> files = Files.walk(searchDir)) {
             // First find the POMs
             List<Path> poms = files
@@ -55,7 +80,7 @@ public final class BundleCollector {
      * @param companionSuffixes the suffixes to find companion assets from
      * @return the resulting bundle
      */
-    private static Bundle makeBundle(Path pomFile, List<String> companionSuffixes) {
+    private Bundle makeBundle(Path pomFile, List<String> companionSuffixes) {
         Path dir = pomFile.getParent();
         String basename = pomFile.getFileName().toString().replace(".pom", "");
         List<Path> companions = companionSuffixes.stream()
@@ -63,5 +88,16 @@ public final class BundleCollector {
                 .filter(Files::isRegularFile)
                 .toList();
         return new Bundle(pomFile, companions);
+    }
+
+    private void signBundleFiles(Bundle bundle) {
+        signer.sign(bundle.pom());
+    }
+
+    /**
+     * Cleanup working directory.
+     */
+    public void cleanup() {
+        DirectoryDeleter.deleteDir(bundlesDir);
     }
 }

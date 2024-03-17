@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
@@ -13,13 +14,22 @@ import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
 
 public final class GpgSigner {
-    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 3;
+    /** The GPG command timeout in seconds. */
+    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
 
+    /** The action arguments provided by the user. */
+    private final ActionArguments actionArgs;
+    /** The GNUPG_HOME directory. */
     private final Path gnupghomeDir;
+    /** The environment provided when running GPG. */
     private final Map<String, String> gpgEnv;
 
-    public GpgSigner() {
+    /** The certificate fingerprint. Found while loading certificate. */
+    private String certificateFingerprint;
+
+    public GpgSigner(ActionArguments actionArgs) {
         try {
+            this.actionArgs = actionArgs;
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
             gpgEnv = Map.of(
@@ -46,29 +56,46 @@ public final class GpgSigner {
      *
      * After loading, the private certificate is tweaked to be ultimately trusted.
      *
-     * @param actionArgs the action arguments
      * @return the signature fingerprint
      */
-    public String loadSigningCertificate(ActionArguments actionArgs) {
+    public String loadSigningCertificate() {
         try {
             // Import the certificate
             Path keyFile = gnupghomeDir.resolve("private.txt");
             Files.writeString(keyFile, actionArgs.gpgPrivateKey());
-            runCmd("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
+            runGpg("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
 
             // Extract fingerprint of the certificate
-            CmdResult idResult = runCmd("gpg", "-K", "--with-colons");
-            String fingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
+            CmdResult idResult = runGpg("gpg", "-K", "--with-colons");
+            certificateFingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
 
             // Mark the certificate as ultimately trusted
             Path ownerTrustFile = gnupghomeDir.resolve("otrust.txt");
-            Files.writeString(ownerTrustFile, fingerprint + ":6:\n");
-            runCmd("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
+            Files.writeString(ownerTrustFile, certificateFingerprint + ":6:\n");
+            runGpg("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
 
-            return fingerprint;
+            return certificateFingerprint;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load private GPG key", e);
         }
+    }
+
+    /**
+     * Signs the file with the loaded GPG certificate.
+     *
+     * @param file the file to sign
+     */
+    public void sign(Path file) {
+        String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
+
+        //"--quiet", 
+        runGpgWithInput(actionArgs.gpgPrivateKeySecret(), 
+                "gpg", "-vvvvvv", "--batch", "--yes",
+                "--pinentry-mode", "loopback",
+                "--passphrase-fd", "0",
+                "-u", fingerprint,
+                "--detach-sign", "--armor",
+                file.toAbsolutePath().toString());
     }
 
     /**
@@ -101,12 +128,13 @@ public final class GpgSigner {
         }
     }
 
-    private CmdResult runCmd(String... args) {
-        return runCmd(null, List.of(args), GPG_DEFAULT_TIMEOUT_SECONDS);
+    private CmdResult runGpg(String... args) {
+        return runGpgWithInput(null, args);
     }
 
-    private CmdResult runCmd(String stdin, List<String> command, int timeoutSeconds) {
-        var input = new CmdInput(command, gnupghomeDir, stdin, gpgEnv, timeoutSeconds);
+    private CmdResult runGpgWithInput(String stdin, String... args) {
+        var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
+        System.out.println("Cmd:" + List.of(args));
         CmdResult res = ExternalCmdRunner.runCmd(input);
         return res;
     }

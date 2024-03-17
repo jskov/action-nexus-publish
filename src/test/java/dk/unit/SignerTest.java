@@ -18,14 +18,14 @@ import dk.mada.action.util.ExternalCmdRunner.CmdResult;
  */
 class SignerTest {
     /** The subject under test - the gpg signer */
-    private final GpgSigner sut = new GpgSigner();
+    private final GpgSigner sut = new GpgSigner(ActionArgumentsFixture.withGpg());
 
     /**
      * Tests that the certificate can be loaded (from test resources) and is ultimately trusted.
      */
     @Test
     void canLoadCertificate() {
-        String fingerprint = sut.loadSigningCertificate(ActionArgumentsFixture.withGpg());
+        String fingerprint = sut.loadSigningCertificate();
         CmdResult result = runCmd("gpg", "-K", fingerprint);
 
         assertThat(result.output())

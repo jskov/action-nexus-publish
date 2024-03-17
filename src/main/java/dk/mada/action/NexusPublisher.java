@@ -6,14 +6,16 @@ import dk.mada.action.BundleCollector.Bundle;
 
 class NexusPublisher {
     private void run() {
-        GpgSigner signer = new GpgSigner();
-        try {
-            ActionArguments args = ActionArguments.fromEnv();
-            System.out.println(args);
-            signer.loadSigningCertificate(args);
+        ActionArguments args = ActionArguments.fromEnv();
+        System.out.println(args);
 
+        GpgSigner signer = new GpgSigner(args);
+        BundleCollector bundleBuilder = new BundleCollector(signer);
+        try {
             System.out.println("Running!");
-            List<Bundle> bundles = BundleCollector.collectBundles(args.searchDir(), args.companionSuffixes());
+            signer.loadSigningCertificate();
+            
+            List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
             System.out.println("Found bundles:");
             bundles.forEach(b -> System.out.println(" " + b));
         } catch (Exception e) {
@@ -21,6 +23,9 @@ class NexusPublisher {
             System.exit(1);
         } finally {
             signer.cleanup();
+            if (bundleBuilder != null) {
+                bundleBuilder.cleanup();
+            }
         }
     }
 
