@@ -46,7 +46,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         List<String> suffixes = Stream.of(suffixesStr.split(",", -1))
                 .map(String::trim)
                 .toList();
-        Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR")).toAbsolutePath();
+        Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
         return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes);
     }
 
