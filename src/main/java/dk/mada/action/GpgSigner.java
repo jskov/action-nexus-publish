@@ -30,15 +30,35 @@ public final class GpgSigner {
     public GpgSigner(ActionArguments actionArgs) {
         try {
             this.actionArgs = actionArgs;
+            
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
-            gpgEnv = Map.of(
-                    "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
+            
+            String tty = getTty(gnupghomeDir);
+            System.out.println("GOT TTY: " + tty);
+            
+            if (tty == null) {
+                gpgEnv = Map.of(
+                        "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
+            } else {
+                gpgEnv = Map.of(
+                        "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString(),
+                        "GPG_TTY", tty);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
         }
     }
 
+    private String getTty(Path execDir) {
+        CmdResult result = ExternalCmdRunner.runCmd(new CmdInput(List.of("tty"), execDir, null, null, 5));
+        if (result.status() == 0) {
+            return result.output();
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Cleanup working directory.
      */
@@ -89,6 +109,8 @@ public final class GpgSigner {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
         System.out.println("signing " + file);
+
+        
         
         // "--quiet",
         CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(),
