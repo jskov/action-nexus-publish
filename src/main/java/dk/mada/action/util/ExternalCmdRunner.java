@@ -2,6 +2,7 @@ package dk.mada.action.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,16 +68,32 @@ public final class ExternalCmdRunner {
             }
             Process p = pb.start();
 
+            /*
             if (stdin != null) {
                 p.outputWriter(StandardCharsets.UTF_8).write(stdin);
                 p.outputWriter().flush();
             }
+            */
             BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
+
+            if (stdin != null) {
+                new Thread(() -> {
+                    System.out.println("WRITER THREAD");
+                    try {
+                        p.outputWriter(StandardCharsets.UTF_8).write(stdin);
+                        p.outputWriter().flush();
+                    } catch (IOException e) {
+                        throw new UncheckedIOException("Failed to write to external process", e);
+                    }
+                    System.out.println("DONE!");
+                }).start();
+            }
 
             if (!p.waitFor(input.timeout(), TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Command timed out!");
             }
 
+            
             String output = outputReader.lines().collect(Collectors.joining("\n"));
             return new CmdResult(p.exitValue(), output);
         } catch (IOException e) {
