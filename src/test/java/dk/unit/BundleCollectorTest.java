@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
 import dk.fixture.ActionArgumentsFixture;
@@ -22,7 +23,7 @@ import dk.mada.action.GpgSigner;
  */
 class BundleCollectorTest {
     /** Temporary test directory. */
-    private @TempDir Path testDir;
+    private @TempDir(cleanup = CleanupMode.NEVER) Path testDir;
 
     private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
     private final BundleCollector sut = new BundleCollector(signer);
@@ -35,6 +36,8 @@ class BundleCollectorTest {
         
         List<Bundle> x = sut.buildBundles(testDir, List.of(".jar"));
         System.out.println("GOt " + x);
+        
+        
     }
     
     @Test

@@ -1,6 +1,7 @@
 package dk.mada.action;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -88,14 +89,36 @@ public final class GpgSigner {
     public void sign(Path file) {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
-        //"--quiet", 
-        runGpgWithInput(actionArgs.gpgPrivateKeySecret(), 
-                "gpg", "-vvvvvv", "--batch", "--yes",
-                "--pinentry-mode", "loopback",
-                "--passphrase-fd", "0",
-                "-u", fingerprint,
-                "--detach-sign", "--armor",
-                file.toAbsolutePath().toString());
+        System.out.println("signing " + file);
+
+        Path password = gnupghomeDir.resolve(".pass");
+        
+        try {
+            Files.writeString(password, actionArgs.gpgPrivateKeySecret());
+            //"--quiet", 
+            CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(), 
+                    "gpg",
+                    // FIXME: when debug "-v", 
+                    "--batch",
+                    //"--yes",
+                    "--pinentry-mode", "loopback",
+                    "--passphrase-file", password.toAbsolutePath().toString(),
+                    "-u", fingerprint,
+                    "--detach-sign", "--armor",
+                    file.toAbsolutePath().toString());
+            
+            // FIXME: debug flag, logger
+            
+            System.out.println("res: " + o.output());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            try {
+                Files.deleteIfExists(password);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
     }
 
     /**
@@ -134,7 +157,6 @@ public final class GpgSigner {
 
     private CmdResult runGpgWithInput(String stdin, String... args) {
         var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
-        System.out.println("Cmd:" + List.of(args));
         CmdResult res = ExternalCmdRunner.runCmd(input);
         return res;
     }

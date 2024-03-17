@@ -92,6 +92,7 @@ public final class BundleCollector {
 
     private void signBundleFiles(Bundle bundle) {
         signer.sign(bundle.pom());
+        bundle.assets.forEach(signer::sign);
     }
 
     /**
