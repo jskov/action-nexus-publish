@@ -99,6 +99,7 @@ public final class GpgSigner {
             CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(), 
                     "gpg",
                     // FIXME: when debug "-v", 
+                    "-v",
                     "--batch",
                     //"--yes",
                     "--pinentry-mode", "loopback",

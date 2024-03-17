@@ -34,7 +34,7 @@ class BundleCollectorTest {
         Files.createFile(testDir.resolve("bundle.pom"));
         signer.loadSigningCertificate();
         
-        List<Bundle> x = sut.buildBundles(testDir, List.of(".jar"));
+        List<Bundle> x = sut.collectBundles(testDir, List.of(".jar"));
         System.out.println("GOt " + x);
         
         
@@ -49,7 +49,7 @@ class BundleCollectorTest {
                 "dir/a-sources.jar",
                 "dir/a.module");
 
-        List<Bundle> foundBundles = new BundleCollector(null).collectBundles(testDir, List.of(".module", "-sources.jar"));
+        List<Bundle> foundBundles = new BundleCollector(null).findBundles(testDir, List.of(".module", "-sources.jar"));
         List<String> foundPaths = foundBundles.stream()
                 .flatMap(b -> toPaths(b).stream())
                 .toList();

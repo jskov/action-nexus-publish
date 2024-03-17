@@ -30,8 +30,8 @@ public final class BundleCollector {
         }
     }
 
-    public List<Bundle> buildBundles(Path searchDir, List<String> companionSuffixes) {
-        List<Bundle> bundles = collectBundles(searchDir, companionSuffixes);
+    public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
+        List<Bundle> bundles = findBundles(searchDir, companionSuffixes);
         
         bundles.forEach(this::signBundleFiles);
         
@@ -45,7 +45,7 @@ public final class BundleCollector {
      * @param companionSuffixes the suffixes to use for finding bundle assets
      * @return the collected bundles
      */
-    public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
+    public List<Bundle> findBundles(Path searchDir, List<String> companionSuffixes) {
         try (Stream<Path> files = Files.walk(searchDir)) {
             // First find the POMs
             List<Path> poms = files
