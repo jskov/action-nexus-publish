@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Builds bundles for later signing/publishing.
@@ -20,9 +21,9 @@ public final class BundleBuilder {
      * @return the found bundles
      */
     public static List<Bundle> findBundles(Path searchDir, List<String> companionSuffixes) {
-        try {
+        try (Stream<Path> files = Files.walk(searchDir)){
             // First find the POMs
-            List<Path> poms = Files.walk(searchDir)
+            List<Path> poms = files
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".pom"))
                     .toList();
