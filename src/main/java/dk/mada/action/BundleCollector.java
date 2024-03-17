@@ -23,6 +23,7 @@ public final class BundleCollector {
         this.signer = signer;
 
         try {
+            // FIXME: probably build the bundle next to the POM file!
             bundlesDir = Files.createTempDirectory("_bundles-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
         } catch (IOException e) {
