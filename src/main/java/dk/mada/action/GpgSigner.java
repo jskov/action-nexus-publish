@@ -1,7 +1,6 @@
 package dk.mada.action;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -90,36 +89,23 @@ public final class GpgSigner {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
         System.out.println("signing " + file);
-
-        Path password = gnupghomeDir.resolve(".pass");
         
-        try {
-            Files.writeString(password, actionArgs.gpgPrivateKeySecret());
-            //"--quiet", 
-            CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(), 
-                    "gpg",
-                    // FIXME: when debug "-v", 
-                    "-v",
-                    "--batch",
-                    //"--yes",
-                    "--pinentry-mode", "loopback",
-                    "--passphrase-fd", "0",
-                    "-u", fingerprint,
-                    "--detach-sign", "--armor",
-                    file.toAbsolutePath().toString());
-            
-            // FIXME: debug flag, logger
-            
-            System.out.println("res: " + o.output());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } finally {
-            try {
-                Files.deleteIfExists(password);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
+        // "--quiet",
+        CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(),
+                "gpg",
+                // FIXME: when debug "-v",
+                "-v",
+                "--batch",
+                // "--yes",
+                "--pinentry-mode", "loopback",
+                "--passphrase-fd", "0",
+                "-u", fingerprint,
+                "--detach-sign", "--armor",
+                file.toAbsolutePath().toString());
+
+        // FIXME: debug flag, logger
+
+        System.out.println("res: " + o.output());
     }
 
     /**
