@@ -9,6 +9,7 @@ class NexusPublisher {
         GpgSigner signer = new GpgSigner();
         try {
             ActionArguments args = ActionArguments.fromEnv();
+            System.out.println(args);
             signer.loadSigningCertificate(args);
 
             System.out.println("Running!");

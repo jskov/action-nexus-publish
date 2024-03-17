@@ -16,7 +16,6 @@ import java.util.stream.Stream;
  * @param companionSuffixes   the companion suffixes to include when finding a POM file
  */
 public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes) {
-
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 
@@ -47,7 +46,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         List<String> suffixes = Stream.of(suffixesStr.split(",", -1))
                 .map(String::trim)
                 .toList();
-        Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
+        Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR")).toAbsolutePath();
         return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes);
     }
 
@@ -77,5 +76,10 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         } else {
             return defaultValue;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ActionArguments [searchDir=" + searchDir + ", companionSuffixes=" + companionSuffixes + "]";
     }
 }
