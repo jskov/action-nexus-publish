@@ -15,7 +15,7 @@ import dk.mada.action.util.ExternalCmdRunner.CmdResult;
 
 public final class GpgSigner {
     /** The GPG command timeout in seconds. */
-    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 10;
+    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
 
     /** The action arguments provided by the user. */
     private final ActionArguments actionArgs;
@@ -94,7 +94,7 @@ public final class GpgSigner {
         CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(),
                 "gpg",
                 // FIXME: when debug "-v",
-                "-vvv",
+                "-v",
                 "--batch",
                 // "--yes",
                 "--pinentry-mode", "loopback",

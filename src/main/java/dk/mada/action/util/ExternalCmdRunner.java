@@ -1,7 +1,5 @@
 package dk.mada.action.util;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Runs external commands.
@@ -115,6 +112,7 @@ public final class ExternalCmdRunner {
             
             // FIXME: does timeout here matter?
             // FIXME: Surely the join above will hang anyway?
+            // FIXME: Indeed that is what happens - need separate thread to interrupt
             if (!p.waitFor(input.timeout(), TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Command timed out!");
             }
