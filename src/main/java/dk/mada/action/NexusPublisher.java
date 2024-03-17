@@ -1,7 +1,5 @@
 package dk.mada.action;
 
-import dk.mada.action.signer.GpgSigner;
-
 class NexusPublisher {
     private void run() {
         GpgSigner signer = new GpgSigner();

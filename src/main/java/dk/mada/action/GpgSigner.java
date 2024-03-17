@@ -1,4 +1,4 @@
-package dk.mada.action.signer;
+package dk.mada.action;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,7 +7,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Map;
 
-import dk.mada.action.ActionArguments;
 import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;

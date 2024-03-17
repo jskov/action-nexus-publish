@@ -1,4 +1,4 @@
-package dk.unit.selector;
+package dk.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,18 +11,18 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import dk.mada.action.selector.BundleBuilder;
-import dk.mada.action.selector.BundleBuilder.Bundle;
+import dk.mada.action.BundleCollector;
+import dk.mada.action.BundleCollector.Bundle;
 
 /**
- * Tests bundle creation - really the search for files.
+ * Tests bundle collection - really the search for files.
  */
-class BundleBuilderTest {
-    @TempDir
-    Path testDir;
+class BundleCollectorTest {
+    /** Temporary test directory. */
+    private @TempDir Path testDir;
 
     @Test
-    void canFindFilesForSigning() throws IOException {
+    void canCollectBundle() throws IOException {
         setupFileTree(
                 "root.jar", // ignored
                 "dir/a.pom",
@@ -30,7 +30,7 @@ class BundleBuilderTest {
                 "dir/a-sources.jar",
                 "dir/a.module");
 
-        List<Bundle> foundBundles = BundleBuilder.findBundles(testDir, List.of(".module", "-sources.jar"));
+        List<Bundle> foundBundles = BundleCollector.collectBundles(testDir, List.of(".module", "-sources.jar"));
         List<String> foundPaths = foundBundles.stream()
                 .flatMap(b -> toPaths(b).stream())
                 .toList();
@@ -54,5 +54,4 @@ class BundleBuilderTest {
             Files.createFile(file);
         }
     }
-
 }

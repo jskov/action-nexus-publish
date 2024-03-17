@@ -20,6 +20,9 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 
+    /**
+     * Argument validation.
+     */
     public ActionArguments {
         Objects.requireNonNull(gpgPrivateKey, "The private GPG key must be specified");
         Objects.requireNonNull(gpgPrivateKeySecret, "The private GPG secret must be specified");

@@ -17,6 +17,7 @@ public final class ActionArgumentsFixture {
     private ActionArgumentsFixture() {
     }
 
+    /** {@return action arguments based on test certificate} */
     public static ActionArguments withGpg() {
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();

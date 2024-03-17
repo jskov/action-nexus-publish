@@ -1,4 +1,4 @@
-package dk.mada.action.selector;
+package dk.mada.action;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Builds bundles for later signing/publishing.
+ * Collects bundles from disk for later signing/publishing.
  */
-public final class BundleBuilder {
-    private BundleBuilder() {
+public final class BundleCollector {
+    private BundleCollector() {
     }
 
     /**
-     * Finds bundles in and below the search directory.
-     * 
+     * Collects bundles in and below the search directory.
+     *
      * @param searchDir         the search directory
-     * @param companionSuffixes the suffixes to use for picking bundle assets
-     * @return the found bundles
+     * @param companionSuffixes the suffixes to use for finding bundle assets
+     * @return the collected bundles
      */
-    public static List<Bundle> findBundles(Path searchDir, List<String> companionSuffixes) {
+    public static List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
         try (Stream<Path> files = Files.walk(searchDir)) {
             // First find the POMs
             List<Path> poms = files
