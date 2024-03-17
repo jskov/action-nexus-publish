@@ -36,7 +36,7 @@ public final class GpgSigner {
     public void cleanup() {
         DirectoryDeleter.deleteDir(gnupghomeDir);
     }
-    
+
     /** {@return the created GNUPGHOME directory} */
     public Path getGnupgHome() {
         return gnupghomeDir;

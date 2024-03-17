@@ -10,12 +10,13 @@ import java.util.stream.Stream;
 /**
  * These are the arguments accepted by the action. Arguments are provided via environment variables.
  *
- * @param gpgPrivateKey the private GPG key used for signing
+ * @param gpgPrivateKey       the private GPG key used for signing
  * @param gpgPrivateKeySecret the secret for the private GPG key
- * @param searchDir the directory to search for POM files
- * @param companionSuffixes the companion suffixes to include when finding a POM file
+ * @param searchDir           the directory to search for POM files
+ * @param companionSuffixes   the companion suffixes to include when finding a POM file
  */
 public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes) {
+
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 
@@ -24,7 +25,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         Objects.requireNonNull(gpgPrivateKeySecret, "The private GPG secret must be specified");
         Objects.requireNonNull(searchDir, "The search directory must be specified");
         Objects.requireNonNull(companionSuffixes, "The companion suffixes must not be null");
-        
+
         if (!gpgPrivateKey.contains(BEGIN_PGP_PRIVATE_KEY_BLOCK)) {
             throw new IllegalArgumentException("Provided GPG key does not contain private header: " + BEGIN_PGP_PRIVATE_KEY_BLOCK);
         }
@@ -32,7 +33,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
             throw new IllegalArgumentException("Not a directory: " + searchDir);
         }
     }
-    
+
     /**
      * Extracts action arguments from the environment.
      *
@@ -41,12 +42,12 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
     public static ActionArguments fromEnv() {
         String suffixesStr = getEnv("COMPANION_SUFFIXES", ".jar, -javadoc.jar, -sources.jar, .module");
         List<String> suffixes = Stream.of(suffixesStr.split(",", -1))
-            .map(String::trim)
-            .toList();
+                .map(String::trim)
+                .toList();
         Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
         return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes);
     }
-    
+
     /**
      * {@return the value of a required environment variable}
      *
@@ -63,7 +64,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
     /**
      * {@return the value of an environment variable, or the default if not defined}
      *
-     * @param envName the name of the environment variable
+     * @param envName      the name of the environment variable
      * @param defaultValue the default value to use if the environment variable is not defined
      */
     private static String getEnv(String envName, String defaultValue) {
