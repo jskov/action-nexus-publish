@@ -103,7 +103,7 @@ public final class GpgSigner {
                     "--batch",
                     //"--yes",
                     "--pinentry-mode", "loopback",
-                    "--passphrase-file", password.toAbsolutePath().toString(),
+                    "--passphrase-fd", "0",
                     "-u", fingerprint,
                     "--detach-sign", "--armor",
                     file.toAbsolutePath().toString());

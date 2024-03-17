@@ -69,6 +69,7 @@ public final class ExternalCmdRunner {
 
             if (stdin != null) {
                 p.outputWriter(StandardCharsets.UTF_8).write(stdin);
+                p.outputWriter().flush();
             }
             BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
 
