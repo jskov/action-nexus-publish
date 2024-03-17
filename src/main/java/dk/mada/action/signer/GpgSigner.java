@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import dk.mada.action.ActionArguments;
+import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
@@ -29,6 +30,13 @@ public final class GpgSigner {
         }
     }
 
+    /**
+     * Cleanup working directory.
+     */
+    public void cleanup() {
+        DirectoryDeleter.deleteDir(gnupghomeDir);
+    }
+    
     /** {@return the created GNUPGHOME directory} */
     public Path getGnupgHome() {
         return gnupghomeDir;
@@ -99,10 +107,8 @@ public final class GpgSigner {
     }
 
     private CmdResult runCmd(String stdin, List<String> command, int timeoutSeconds) {
-        System.out.println("CMD: " + command);
         var input = new CmdInput(command, gnupghomeDir, stdin, gpgEnv, timeoutSeconds);
         CmdResult res = ExternalCmdRunner.runCmd(input);
-        System.out.println(res.output());
         return res;
     }
 }
