@@ -16,13 +16,13 @@ import dk.mada.action.ActionArguments;
 public final class ActionArgumentsFixture {
     private ActionArgumentsFixture() {
     }
-    
+
     public static ActionArguments withGpg() {
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
         return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes);
     }
-    
+
     private static String readResource(String path) {
         try (InputStream is = ActionArgumentsFixture.class.getResourceAsStream(path)) {
             if (is == null) {

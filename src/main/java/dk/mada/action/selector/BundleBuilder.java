@@ -21,7 +21,7 @@ public final class BundleBuilder {
      * @return the found bundles
      */
     public static List<Bundle> findBundles(Path searchDir, List<String> companionSuffixes) {
-        try (Stream<Path> files = Files.walk(searchDir)){
+        try (Stream<Path> files = Files.walk(searchDir)) {
             // First find the POMs
             List<Path> poms = files
                     .filter(Files::isRegularFile)

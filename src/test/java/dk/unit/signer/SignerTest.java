@@ -20,8 +20,7 @@ class SignerTest {
     private final GpgSigner sut = new GpgSigner();
 
     /**
-     * Tests that the certificate can be loaded (from test resources)
-     * and is ultimately trusted.
+     * Tests that the certificate can be loaded (from test resources) and is ultimately trusted.
      */
     @Test
     void canLoadCertificate() {
@@ -29,8 +28,8 @@ class SignerTest {
         CmdResult result = runCmd("gpg", "-K", fingerprint);
 
         assertThat(result.output())
-            .contains("sec#")
-            .contains("[ultimate]");
+                .contains("sec#")
+                .contains("[ultimate]");
     }
 
     private CmdResult runCmd(String... args) {
