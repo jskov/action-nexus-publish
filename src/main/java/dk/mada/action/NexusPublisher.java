@@ -13,7 +13,8 @@ class NexusPublisher {
 
             System.out.println("Running!");
             List<Bundle> bundles = BundleCollector.collectBundles(args.searchDir(), args.companionSuffixes());
-            System.out.println("Found bundles: " + bundles);
+            System.out.println("Found bundles:");
+            bundles.forEach(b -> System.out.println(" " + b));
         } catch (Exception e) {
             System.err.println("Publisher failed initialization: " + e.getMessage());
             System.exit(1);
