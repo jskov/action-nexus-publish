@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
  * Runs external commands.
  */
 public final class ExternalCmdRunner {
-    /** Default timeout for a command. */
-    private static final int CMD_DEFAULT_TIMEOUT_SECONDS = 30;
     /** The temp directory path */
     private static final Path TEMP_DIR = Paths.get(System.getProperty("java.io.tmpdir"));
 
@@ -32,13 +30,6 @@ public final class ExternalCmdRunner {
      * @param timeout the max runtime (in seconds) for the command. If exceeded, IllegalStateException is thrown
      */
     public record CmdInput(List<String> command, Path execDir, String stdin, Map<String, String> env, int timeout) {
-        public static CmdInput ofCmd(List<String> command) {
-            return new CmdInput(command, null, null, null, CMD_DEFAULT_TIMEOUT_SECONDS);
-        }
-
-        public static CmdInput ofCmd(List<String> command, Map<String, String> env) {
-            return new CmdInput(command, null, null, env, CMD_DEFAULT_TIMEOUT_SECONDS);
-        }
     }
 
     /**
@@ -54,7 +45,7 @@ public final class ExternalCmdRunner {
      * Runs an external command.
      *
      * If the command fails (returns non-zero) or times out, a IllegalStateException is thrown.
-     * 
+     *
      * @param input the command input
      * @return the command result
      */

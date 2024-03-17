@@ -82,7 +82,7 @@ public final class GpgSigner {
 
         private final String prefix;
 
-        private GpgDetailType(String prefix) {
+        GpgDetailType(String prefix) {
             this.prefix = prefix;
         }
 
