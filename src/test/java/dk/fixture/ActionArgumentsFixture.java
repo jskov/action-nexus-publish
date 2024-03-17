@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import dk.mada.action.ActionArguments;
 
@@ -13,11 +16,14 @@ import dk.mada.action.ActionArguments;
 public final class ActionArgumentsFixture {
     private ActionArgumentsFixture() {
     }
-    
+
+    /** {@return action arguments based on test certificate} */
     public static ActionArguments withGpg() {
-        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"));
+        Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+        List<String> emptySuffixes = List.of();
+        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes);
     }
-    
+
     private static String readResource(String path) {
         try (InputStream is = ActionArgumentsFixture.class.getResourceAsStream(path)) {
             if (is == null) {

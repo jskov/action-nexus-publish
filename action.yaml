@@ -3,6 +3,14 @@ author: "Jesper Skov (jskov@mada.dk)"
 description: "Publish maven artifacts to Nexus"
 
 inputs:
+  search_directory:
+    required: true
+    description: "FIXME search dir"
+
+  companion_suffixes:
+    required: false
+    description: "FIXME companion suffixes"
+
   signing_key:
     required: true
     description: "FIXME signing key"
@@ -27,5 +35,8 @@ runs:
         java -cp $classes_dir dk.mada.action.NexusPublisher arg1 arg2 argN
         rm -rf $classes_dir
       env:
+        SEARCH_DIR: ${{ inputs.search_directory }}
+        COMPANION_SUFFIXES: ${{ inputs.companion_suffixes }}
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
+        

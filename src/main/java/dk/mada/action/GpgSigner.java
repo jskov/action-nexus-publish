@@ -1,4 +1,4 @@
-package dk.mada.action.signer;
+package dk.mada.action;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,7 +7,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Map;
 
-import dk.mada.action.ActionArguments;
+import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
@@ -27,6 +27,13 @@ public final class GpgSigner {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
         }
+    }
+
+    /**
+     * Cleanup working directory.
+     */
+    public void cleanup() {
+        DirectoryDeleter.deleteDir(gnupghomeDir);
     }
 
     /** {@return the created GNUPGHOME directory} */
@@ -75,7 +82,7 @@ public final class GpgSigner {
 
         private final String prefix;
 
-        private GpgDetailType(String prefix) {
+        GpgDetailType(String prefix) {
             this.prefix = prefix;
         }
 
@@ -99,10 +106,8 @@ public final class GpgSigner {
     }
 
     private CmdResult runCmd(String stdin, List<String> command, int timeoutSeconds) {
-        System.out.println("CMD: " + command);
         var input = new CmdInput(command, gnupghomeDir, stdin, gpgEnv, timeoutSeconds);
         CmdResult res = ExternalCmdRunner.runCmd(input);
-        System.out.println(res.output());
         return res;
     }
 }
