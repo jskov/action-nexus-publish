@@ -10,6 +10,7 @@ inputs:
   companion_suffixes:
     required: false
     description: "FIXME companion suffixes"
+    default: ".jar, .module, -javadoc.jar, -sources.jar"
 
   signing_key:
     required: true

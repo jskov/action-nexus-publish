@@ -42,7 +42,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
      * @return the environment-specified action arguments
      */
     public static ActionArguments fromEnv() {
-        String suffixesStr = getEnv("COMPANION_SUFFIXES", ".jar, -javadoc.jar, -sources.jar, .module");
+        String suffixesStr = getRequiredEnv("COMPANION_SUFFIXES");
         List<String> suffixes = Stream.of(suffixesStr.split(",", -1))
                 .map(String::trim)
                 .toList();
@@ -61,21 +61,6 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
             throw new IllegalArgumentException("Needs environment variable '" + envName + "' to be defined and non-blank. See readme!");
         }
         return value;
-    }
-
-    /**
-     * {@return the value of an environment variable, or the default if not defined}
-     *
-     * @param envName      the name of the environment variable
-     * @param defaultValue the default value to use if the environment variable is not defined
-     */
-    private static String getEnv(String envName, String defaultValue) {
-        String value = System.getenv(envName);
-        if (value != null) {
-            return value;
-        } else {
-            return defaultValue;
-        }
     }
 
     @Override
