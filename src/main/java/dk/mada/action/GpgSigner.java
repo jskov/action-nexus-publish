@@ -33,29 +33,10 @@ public final class GpgSigner {
 
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
-
-            String tty = getTty(gnupghomeDir);
-            System.out.println("GOT TTY: " + tty);
-
-            if (tty == null) {
-                gpgEnv = Map.of(
-                        "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
-            } else {
-                gpgEnv = Map.of(
-                        "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString(),
-                        "GPG_TTY", tty);
-            }
+            gpgEnv = Map.of(
+                    "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
-        }
-    }
-
-    private String getTty(Path execDir) {
-        CmdResult result = ExternalCmdRunner.runCmd(new CmdInput(List.of("tty"), execDir, null, null, 5));
-        if (result.status() == 0) {
-            return result.output();
-        } else {
-            return null;
         }
     }
 
@@ -125,8 +106,17 @@ public final class GpgSigner {
                 file.toAbsolutePath().toString());
 
         // FIXME: debug flag, logger
+        //System.out.println("res: " + o.output());
+    }
 
-        System.out.println("res: " + o.output());
+    private CmdResult runGpg(String... args) {
+        return runGpgWithInput(null, args);
+    }
+
+    private CmdResult runGpgWithInput(String stdin, String... args) {
+        var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
+        CmdResult res = ExternalCmdRunner.runCmd(input);
+        return res;
     }
 
     /**
@@ -157,15 +147,5 @@ public final class GpgSigner {
                     .findFirst()
                     .orElseThrow();
         }
-    }
-
-    private CmdResult runGpg(String... args) {
-        return runGpgWithInput(null, args);
-    }
-
-    private CmdResult runGpgWithInput(String stdin, String... args) {
-        var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
-        CmdResult res = ExternalCmdRunner.runCmd(input);
-        return res;
     }
 }
