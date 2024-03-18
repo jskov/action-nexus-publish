@@ -21,13 +21,13 @@ public final class ActionArgumentsFixture {
 
     /** {@return action arguments based on test certificate} */
     public static ActionArguments withGpg() {
-        LoggerConfig.loadDefaultConfig(Level.FINEST);
+        Level testLogLevel = Level.FINEST;
+        LoggerConfig.loadDefaultConfig(testLogLevel);
 
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
-        Level logLevel = Level.FINEST;
         return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes,
-                logLevel);
+                testLogLevel);
     }
 
     private static String readResource(String path) {
