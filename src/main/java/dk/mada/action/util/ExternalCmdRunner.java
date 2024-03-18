@@ -9,12 +9,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * Runs external commands.
  */
 public final class ExternalCmdRunner {
+    private static Logger logger = Logger.getLogger(ExternalCmdRunner.class.getName());
     /** The temp directory path */
     private static final Path TEMP_DIR = Paths.get(System.getProperty("java.io.tmpdir"));
 
@@ -56,6 +58,8 @@ public final class ExternalCmdRunner {
             if (execDir == null) {
                 execDir = TEMP_DIR;
             }
+            logger.fine("Run in " + execDir + "\ncommand: " + input.command());
+
             String stdin = input.stdin();
             Map<String, String> env = input.env();
 
@@ -80,8 +84,10 @@ public final class ExternalCmdRunner {
                 throw new IllegalStateException("Command timed out!");
             }
 
+            int status = p.exitValue();
             String output = outputReader.lines().collect(Collectors.joining("\n"));
-            return new CmdResult(p.exitValue(), output);
+            logger.finest("status: " + status + ", output: " + output);
+            return new CmdResult(status, output);
         } catch (IOException e) {
             throw new IllegalStateException("Failed running command", e);
         } catch (InterruptedException e) {
