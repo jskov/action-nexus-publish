@@ -7,6 +7,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
@@ -14,6 +15,7 @@ import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
 
 public final class GpgSigner {
+    private static Logger logger = Logger.getLogger(GpgSigner.class.getName());
     /** The GPG command timeout in seconds. */
     private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
 
@@ -27,6 +29,11 @@ public final class GpgSigner {
     /** The certificate fingerprint. Found while loading certificate. */
     private String certificateFingerprint;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param actionArgs the action arguments
+     */
     public GpgSigner(ActionArguments actionArgs) {
         try {
             this.actionArgs = actionArgs;
@@ -35,6 +42,8 @@ public final class GpgSigner {
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
             gpgEnv = Map.of(
                     "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
+            
+            logger.fine("CREATED GPG");
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
         }
@@ -89,7 +98,7 @@ public final class GpgSigner {
     public void sign(Path file) {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
-        System.out.println("signing " + file);
+        logger.fine("signing " + file);
 
         // "--quiet",
         CmdResult o = runCmdWithInput(actionArgs.gpgPrivateKeySecret(),
@@ -106,7 +115,7 @@ public final class GpgSigner {
                 file.toAbsolutePath().toString());
 
         // FIXME: debug flag, logger
-        //System.out.println("res: " + o.output());
+        logger.finest("res: " + o.output());
     }
 
     private CmdResult runCmd(String... args) {

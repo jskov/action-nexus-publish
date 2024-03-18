@@ -1,25 +1,33 @@
 package dk.mada.action;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.action.util.LoggerConfig;
 
 class NexusPublisher {
+    private static Logger logger = Logger.getLogger(NexusPublisher.class.getName());
+    
     private void run() {
         ActionArguments args = ActionArguments.fromEnv();
-        System.out.println(args);
+        LoggerConfig.loadDefaultConfig(args.logLevel());
+        logger.info("info");
+        logger.config(args.toString());
+        logger.fine("fine");
+        logger.fine("finest");
 
         GpgSigner signer = new GpgSigner(args);
         BundleCollector bundleBuilder = new BundleCollector(signer);
         try {
-            System.out.println("Running!");
+            logger.info("Running!");
             signer.loadSigningCertificate();
 
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
-            System.out.println("Found bundles:");
-            bundles.forEach(b -> System.out.println(" " + b));
+            logger.info("Found bundles:");
+            bundles.forEach(b -> logger.info(" " + b));
         } catch (Exception e) {
-            System.err.println("Publisher failed initialization: " + e.getMessage());
+            logger.warning("Publisher failed initialization: " + e.getMessage());
             System.exit(1);
         } finally {
             signer.cleanup();

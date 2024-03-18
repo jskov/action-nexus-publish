@@ -4,7 +4,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 /**
@@ -14,8 +16,9 @@ import java.util.stream.Stream;
  * @param gpgPrivateKeySecret the secret for the private GPG key
  * @param searchDir           the directory to search for POM files
  * @param companionSuffixes   the companion suffixes to include when finding a POM file
+ * @param logLevel            the logging level to use
  */
-public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes) {
+public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes, Level logLevel) {
 
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
@@ -28,6 +31,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         Objects.requireNonNull(gpgPrivateKeySecret, "The private GPG secret must be specified");
         Objects.requireNonNull(searchDir, "The search directory must be specified");
         Objects.requireNonNull(companionSuffixes, "The companion suffixes must not be null");
+        Objects.requireNonNull(logLevel, "The logging level must not be null");
 
         if (!gpgPrivateKey.contains(BEGIN_PGP_PRIVATE_KEY_BLOCK)) {
             throw new IllegalArgumentException("Provided GPG key does not contain private header: " + BEGIN_PGP_PRIVATE_KEY_BLOCK);
@@ -48,7 +52,8 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
                 .map(String::trim)
                 .toList();
         Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
-        return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes);
+        Level logLevel = Level.parse(getRequiredEnv("LOG_LEVEL").toUpperCase(Locale.ROOT));
+        return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes, logLevel);
     }
 
     /**

@@ -3,6 +3,15 @@ author: "Jesper Skov (jskov@mada.dk)"
 description: "Publish maven artifacts to Nexus"
 
 inputs:
+  log_level:
+    description: 'Log level (for JUL framework)'
+    required: false
+    default: 'info'
+    type: choice
+    options:
+      - info
+      - finest
+
   search_directory:
     required: true
     description: "FIXME search dir"
@@ -40,4 +49,5 @@ runs:
         COMPANION_SUFFIXES: ${{ inputs.companion_suffixes }}
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
+        LOG_LEVEL: ${{ inputs.log_level }}
         
