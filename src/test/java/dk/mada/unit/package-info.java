@@ -1,4 +1,4 @@
 /**
  * Action unit tests.
  */
-package dk.unit;
+package dk.mada.unit;

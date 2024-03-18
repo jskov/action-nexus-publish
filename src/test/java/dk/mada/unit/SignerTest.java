@@ -1,4 +1,4 @@
-package dk.unit;
+package dk.mada.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,11 +7,11 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import dk.fixture.ActionArgumentsFixture;
 import dk.mada.action.GpgSigner;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
+import dk.mada.fixture.ActionArgumentsFixture;
 
 /**
  * Signer tests.

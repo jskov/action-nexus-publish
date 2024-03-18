@@ -1,4 +1,4 @@
-package dk.fixture;
+package dk.mada.fixture;
 
 import java.io.IOException;
 import java.io.InputStream;

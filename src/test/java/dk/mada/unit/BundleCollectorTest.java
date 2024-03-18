@@ -1,4 +1,4 @@
-package dk.unit;
+package dk.mada.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
-import dk.fixture.ActionArgumentsFixture;
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.fixture.ActionArgumentsFixture;
 import dk.mada.action.GpgSigner;
 
 /**

@@ -1,4 +1,4 @@
 /**
  * Action test fixtures.
  */
-package dk.fixture;
+package dk.mada.fixture;
