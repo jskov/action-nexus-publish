@@ -33,9 +33,9 @@ public final class BundleCollector {
 
     public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
         List<Bundle> bundles = findBundles(searchDir, companionSuffixes);
-        
+
         bundles.forEach(this::signBundleFiles);
-        
+
         return bundles;
     }
 

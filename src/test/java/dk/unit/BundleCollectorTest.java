@@ -33,13 +33,12 @@ class BundleCollectorTest {
         Files.copy(Paths.get("gradle/wrapper/gradle-wrapper.jar"), testDir.resolve("bundle.jar"));
         Files.createFile(testDir.resolve("bundle.pom"));
         signer.loadSigningCertificate();
-        
+
         List<Bundle> x = sut.collectBundles(testDir, List.of(".jar"));
         System.out.println("GOt " + x);
-        
-        
+
     }
-    
+
     @Test
     void canCollectBundle() throws IOException {
         setupFileTree(

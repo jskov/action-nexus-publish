@@ -30,13 +30,13 @@ public final class GpgSigner {
     public GpgSigner(ActionArguments actionArgs) {
         try {
             this.actionArgs = actionArgs;
-            
+
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
-            
+
             String tty = getTty(gnupghomeDir);
             System.out.println("GOT TTY: " + tty);
-            
+
             if (tty == null) {
                 gpgEnv = Map.of(
                         "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
@@ -58,7 +58,7 @@ public final class GpgSigner {
             return null;
         }
     }
-    
+
     /**
      * Cleanup working directory.
      */
@@ -110,13 +110,11 @@ public final class GpgSigner {
 
         System.out.println("signing " + file);
 
-        
-        
         // "--quiet",
         CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(),
                 "gpg",
                 // FIXME: when debug "-v",
-                //"-v",
+                // "-v",
                 "--batch",
                 "--no-tty",
                 "--yes",

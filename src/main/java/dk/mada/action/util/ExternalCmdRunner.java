@@ -75,7 +75,7 @@ public final class ExternalCmdRunner {
             }
 
             BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
-            
+
             if (!p.waitFor(input.timeout(), TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Command timed out!");
             }

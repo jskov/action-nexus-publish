@@ -14,7 +14,7 @@ class NexusPublisher {
         try {
             System.out.println("Running!");
             signer.loadSigningCertificate();
-            
+
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
             System.out.println("Found bundles:");
             bundles.forEach(b -> System.out.println(" " + b));
