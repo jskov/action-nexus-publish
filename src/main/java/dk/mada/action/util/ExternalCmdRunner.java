@@ -1,15 +1,15 @@
 package dk.mada.action.util;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Runs external commands.
@@ -68,60 +68,19 @@ public final class ExternalCmdRunner {
             }
             Process p = pb.start();
 
-            System.out.println("Command: " + input.command());
-
             if (stdin != null) {
-                p.outputWriter(StandardCharsets.UTF_8).write(stdin);
-                p.outputWriter().close();
-            }
-
-//            BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
-/*
-            if (stdin != null) {
-                new Thread(() -> {
-                    System.out.println("WRITER THREAD");
-                    try {
-                        p.outputWriter(StandardCharsets.UTF_8).write(stdin);
-                        p.outputWriter().close();
-                    } catch (IOException e) {
-                        throw new UncheckedIOException("Failed to write to external process", e);
-                    }
-                    System.out.println("WRITER DONE!");
-                }).start();
-            }
-*/
-            ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
-
-            Thread readerThread = new Thread(() -> {
-                System.out.println("READER THREAD");
-                int total = 0;
-                byte[] buf = new byte[1024];
-                try (InputStream is = p.getInputStream()) {
-                    int read;
-                    while ((read = is.read(buf)) != -1) {
-                        outputBuffer.write(buf, 0, read);
-                        total += read;
-                    }
-                } catch (IOException e) {
-                    throw new UncheckedIOException("Failed to write to external process", e);
+                try (BufferedWriter w = p.outputWriter(StandardCharsets.UTF_8)) {
+                    w.write(stdin);
                 }
-                System.out.println("READER DONE after " + total + " bytes!");
-            });
-            readerThread.start();
-            readerThread.join();
+            }
+
+            BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
             
-            // FIXME: does timeout here matter?
-            // FIXME: Surely the join above will hang anyway?
-            // FIXME: Indeed that is what happens - need separate thread to interrupt
             if (!p.waitFor(input.timeout(), TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Command timed out!");
             }
 
-            // FIXME: handle closing thread streams
-            
-//            String output = outputReader.lines().collect(Collectors.joining("\n"));
-            String output = outputBuffer.toString(StandardCharsets.UTF_8);
-            System.out.println("Output: " + output);
+            String output = outputReader.lines().collect(Collectors.joining("\n"));
             return new CmdResult(p.exitValue(), output);
         } catch (IOException e) {
             throw new IllegalStateException("Failed running command", e);
