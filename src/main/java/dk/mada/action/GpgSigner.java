@@ -64,16 +64,16 @@ public final class GpgSigner {
             // Import the certificate
             Path keyFile = gnupghomeDir.resolve("private.txt");
             Files.writeString(keyFile, actionArgs.gpgPrivateKey());
-            runGpg("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
+            runCmd("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
 
             // Extract fingerprint of the certificate
-            CmdResult idResult = runGpg("gpg", "-K", "--with-colons");
+            CmdResult idResult = runCmd("gpg", "-K", "--with-colons");
             certificateFingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
 
             // Mark the certificate as ultimately trusted
             Path ownerTrustFile = gnupghomeDir.resolve("otrust.txt");
             Files.writeString(ownerTrustFile, certificateFingerprint + ":6:\n");
-            runGpg("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
+            runCmd("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
 
             return certificateFingerprint;
         } catch (IOException e) {
@@ -92,7 +92,7 @@ public final class GpgSigner {
         System.out.println("signing " + file);
 
         // "--quiet",
-        CmdResult o = runGpgWithInput(actionArgs.gpgPrivateKeySecret(),
+        CmdResult o = runCmdWithInput(actionArgs.gpgPrivateKeySecret(),
                 "gpg",
                 // FIXME: when debug "-v",
                 // "-v",
@@ -109,11 +109,11 @@ public final class GpgSigner {
         //System.out.println("res: " + o.output());
     }
 
-    private CmdResult runGpg(String... args) {
-        return runGpgWithInput(null, args);
+    private CmdResult runCmd(String... args) {
+        return runCmdWithInput(null, args);
     }
 
-    private CmdResult runGpgWithInput(String stdin, String... args) {
+    private CmdResult runCmdWithInput(String stdin, String... args) {
         var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
         CmdResult res = ExternalCmdRunner.runCmd(input);
         return res;
