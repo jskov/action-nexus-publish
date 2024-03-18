@@ -25,7 +25,8 @@ public final class ActionArgumentsFixture {
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
         Level logLevel = Level.FINEST;
-        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes, logLevel);
+        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes,
+                logLevel);
     }
 
     private static String readResource(String path) {

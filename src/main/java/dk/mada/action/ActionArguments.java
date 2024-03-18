@@ -18,7 +18,8 @@ import java.util.stream.Stream;
  * @param companionSuffixes   the companion suffixes to include when finding a POM file
  * @param logLevel            the logging level to use
  */
-public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes, Level logLevel) {
+public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes,
+        Level logLevel) {
 
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";

@@ -42,8 +42,6 @@ public final class GpgSigner {
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
             gpgEnv = Map.of(
                     "GNUPGHOME", gnupghomeDir.toAbsolutePath().toString());
-            
-            logger.fine("CREATED GPG");
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create GNUPGHOME directory", e);
         }

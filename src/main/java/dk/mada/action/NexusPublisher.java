@@ -8,7 +8,7 @@ import dk.mada.action.util.LoggerConfig;
 
 class NexusPublisher {
     private static Logger logger = Logger.getLogger(NexusPublisher.class.getName());
-    
+
     private void run() {
         ActionArguments args = ActionArguments.fromEnv();
         LoggerConfig.loadDefaultConfig(args.logLevel());
