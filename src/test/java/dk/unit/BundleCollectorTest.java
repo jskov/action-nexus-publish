@@ -25,7 +25,9 @@ class BundleCollectorTest {
     /** Temporary test directory. */
     private @TempDir(cleanup = CleanupMode.NEVER) Path testDir;
 
+    /** The signer used for testing. */
     private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
+    /** The subject under test - the collector. */
     private final BundleCollector sut = new BundleCollector(signer);
 
     /**
