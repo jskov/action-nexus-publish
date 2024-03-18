@@ -122,7 +122,6 @@ public final class GpgSigner {
                 "-u", fingerprint,
                 "--detach-sign", "--armor",
                 file.toAbsolutePath().toString()));
-        // "--quiet",
         runCmdWithInput(actionArgs.gpgPrivateKeySecret(), cmd);
 
         if (!Files.exists(signatureFile)) {
