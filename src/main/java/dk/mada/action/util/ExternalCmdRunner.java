@@ -87,6 +87,11 @@ public final class ExternalCmdRunner {
             int status = p.exitValue();
             String output = outputReader.lines().collect(Collectors.joining("\n"));
             logger.finest("status: " + status + ", output: " + output);
+
+            if (status != 0) {
+                throw new IllegalStateException("Command failed!");
+            }
+
             return new CmdResult(status, output);
         } catch (IOException e) {
             throw new IllegalStateException("Failed running command", e);

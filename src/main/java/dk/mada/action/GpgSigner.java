@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import dk.mada.action.util.DirectoryDeleter;
@@ -103,11 +105,15 @@ public final class GpgSigner {
         if (Files.exists(signatureFile)) {
             throw new IllegalStateException("Signature already exists for " + file);
         }
-        // "--quiet",
-        CmdResult o = runCmdWithInput(actionArgs.gpgPrivateKeySecret(),
-                "gpg",
-                // FIXME: when debug "-v",
-                // "-v",
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add("gpg");
+        if (logger.isLoggable(Level.FINEST)) {
+            cmd.add("-vv");
+        } else if (logger.isLoggable(Level.FINER)) {
+            cmd.add("-v");
+        }
+        cmd.addAll(List.of(
                 "--batch",
                 "--no-tty",
                 "--yes",
@@ -115,10 +121,9 @@ public final class GpgSigner {
                 "--passphrase-fd", "0",
                 "-u", fingerprint,
                 "--detach-sign", "--armor",
-                file.toAbsolutePath().toString());
-
-        // FIXME: debug flag, logger
-        logger.finest("res: " + o.output());
+                file.toAbsolutePath().toString()));
+        // "--quiet",
+        runCmdWithInput(actionArgs.gpgPrivateKeySecret(), cmd);
 
         if (!Files.exists(signatureFile)) {
             throw new IllegalStateException("Created signature not found: " + signatureFile);
@@ -128,11 +133,11 @@ public final class GpgSigner {
     }
 
     private CmdResult runCmd(String... args) {
-        return runCmdWithInput(null, args);
+        return runCmdWithInput(null, List.of(args));
     }
 
-    private CmdResult runCmdWithInput(String stdin, String... args) {
-        var input = new CmdInput(List.of(args), gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
+    private CmdResult runCmdWithInput(String stdin, List<String> args) {
+        var input = new CmdInput(args, gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
         CmdResult res = ExternalCmdRunner.runCmd(input);
         return res;
     }
