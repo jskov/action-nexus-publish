@@ -69,27 +69,27 @@ public final class ExternalCmdRunner {
             Process p = pb.start();
 
             System.out.println("Command: " + input.command());
-            /*
+
             if (stdin != null) {
                 p.outputWriter(StandardCharsets.UTF_8).write(stdin);
-                p.outputWriter().flush();
+                p.outputWriter().close();
             }
-            */
-//            BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
 
+//            BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
+/*
             if (stdin != null) {
                 new Thread(() -> {
                     System.out.println("WRITER THREAD");
                     try {
                         p.outputWriter(StandardCharsets.UTF_8).write(stdin);
-                        p.outputWriter().flush();
+                        p.outputWriter().close();
                     } catch (IOException e) {
                         throw new UncheckedIOException("Failed to write to external process", e);
                     }
                     System.out.println("WRITER DONE!");
                 }).start();
             }
-
+*/
             ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
 
             Thread readerThread = new Thread(() -> {

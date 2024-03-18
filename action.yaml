@@ -29,9 +29,8 @@ runs:
           distribution: 'temurin'
 
     - name: run publisher
-#kills tty?      shell: bash
+      shell: bash
       run: |-
-        tty
         classes_dir=$(mktemp -d)
         (cd ${{ github.action_path }}/src/main/java ; javac -d $classes_dir $(find . -name \*.java))
         java -cp $classes_dir dk.mada.action.NexusPublisher arg1 arg2 argN
