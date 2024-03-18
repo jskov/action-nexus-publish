@@ -23,9 +23,6 @@ class NexusPublisher {
             System.exit(1);
         } finally {
             signer.cleanup();
-            if (bundleBuilder != null) {
-                bundleBuilder.cleanup();
-            }
         }
     }
 

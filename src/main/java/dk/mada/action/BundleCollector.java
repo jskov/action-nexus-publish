@@ -3,12 +3,8 @@ package dk.mada.action;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
-
-import dk.mada.action.util.DirectoryDeleter;
 
 /**
  * Collects bundles from disk for later signing/publishing.
@@ -16,19 +12,9 @@ import dk.mada.action.util.DirectoryDeleter;
 public final class BundleCollector {
     /** The GPG signer. */
     private final GpgSigner signer;
-    /** The directory where bundles are built before upload. */
-    private final Path bundlesDir;
 
     public BundleCollector(GpgSigner signer) {
         this.signer = signer;
-
-        try {
-            // FIXME: probably build the bundle next to the POM file!
-            bundlesDir = Files.createTempDirectory("_bundles-",
-                    PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to create bundles directory", e);
-        }
     }
 
     public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
@@ -94,12 +80,5 @@ public final class BundleCollector {
     private void signBundleFiles(Bundle bundle) {
         signer.sign(bundle.pom());
         bundle.assets.forEach(signer::sign);
-    }
-
-    /**
-     * Cleanup working directory.
-     */
-    public void cleanup() {
-        DirectoryDeleter.deleteDir(bundlesDir);
     }
 }
