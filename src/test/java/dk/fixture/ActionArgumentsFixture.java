@@ -21,7 +21,8 @@ public final class ActionArgumentsFixture {
 
     /** {@return action arguments based on test certificate} */
     public static ActionArguments withGpg() {
-        LoggerConfig.loadDefaultConfig();
+        LoggerConfig.loadDefaultConfig(Level.FINEST);
+
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
         Level logLevel = Level.FINEST;
