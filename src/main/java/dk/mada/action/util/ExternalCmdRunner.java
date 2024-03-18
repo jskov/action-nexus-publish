@@ -73,6 +73,8 @@ public final class ExternalCmdRunner {
             Process p = pb.start();
 
             if (stdin != null) {
+                // Important to make sure the output is closed after writing
+                // or the command may hang waiting for more.
                 try (BufferedWriter w = p.outputWriter(StandardCharsets.UTF_8)) {
                     w.write(stdin);
                 }
