@@ -1,6 +1,7 @@
 package dk.mada.action.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -8,12 +9,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * Runs external commands.
  */
 public final class ExternalCmdRunner {
+    private static Logger logger = Logger.getLogger(ExternalCmdRunner.class.getName());
     /** The temp directory path */
     private static final Path TEMP_DIR = Paths.get(System.getProperty("java.io.tmpdir"));
 
@@ -55,6 +58,8 @@ public final class ExternalCmdRunner {
             if (execDir == null) {
                 execDir = TEMP_DIR;
             }
+            logger.fine("Run in " + execDir + "\ncommand: " + input.command());
+
             String stdin = input.stdin();
             Map<String, String> env = input.env();
 
@@ -68,16 +73,28 @@ public final class ExternalCmdRunner {
             Process p = pb.start();
 
             if (stdin != null) {
-                p.outputWriter(StandardCharsets.UTF_8).write(stdin);
+                // Important to make sure the output is closed after writing
+                // or the command may hang waiting for more.
+                try (BufferedWriter w = p.outputWriter(StandardCharsets.UTF_8)) {
+                    w.write(stdin);
+                }
             }
+
             BufferedReader outputReader = p.inputReader(StandardCharsets.UTF_8);
 
             if (!p.waitFor(input.timeout(), TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Command timed out!");
             }
 
+            int status = p.exitValue();
             String output = outputReader.lines().collect(Collectors.joining("\n"));
-            return new CmdResult(p.exitValue(), output);
+            logger.finest("status: " + status + ", output: " + output);
+
+            if (status != 0) {
+                throw new IllegalStateException("Command failed!");
+            }
+
+            return new CmdResult(status, output);
         } catch (IOException e) {
             throw new IllegalStateException("Failed running command", e);
         } catch (InterruptedException e) {

@@ -1,4 +1,4 @@
-package dk.unit;
+package dk.mada.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,25 +7,25 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import dk.fixture.ActionArgumentsFixture;
 import dk.mada.action.GpgSigner;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
+import dk.mada.fixture.ActionArgumentsFixture;
 
 /**
  * Signer tests.
  */
 class SignerTest {
     /** The subject under test - the gpg signer */
-    private final GpgSigner sut = new GpgSigner();
+    private final GpgSigner sut = new GpgSigner(ActionArgumentsFixture.withGpg());
 
     /**
      * Tests that the certificate can be loaded (from test resources) and is ultimately trusted.
      */
     @Test
     void canLoadCertificate() {
-        String fingerprint = sut.loadSigningCertificate(ActionArgumentsFixture.withGpg());
+        String fingerprint = sut.loadSigningCertificate();
         CmdResult result = runCmd("gpg", "-K", fingerprint);
 
         assertThat(result.output())

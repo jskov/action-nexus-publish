@@ -1,22 +1,42 @@
 package dk.mada.action;
 
-class NexusPublisher {
-    private void run() {
-        GpgSigner signer = new GpgSigner();
-        try {
-            ActionArguments args = ActionArguments.fromEnv();
-            signer.loadSigningCertificate(args);
+import java.util.List;
+import java.util.logging.Logger;
 
-            System.out.println("Running!");
+import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.action.util.LoggerConfig;
+
+class NexusPublisher {
+    private static Logger logger = Logger.getLogger(NexusPublisher.class.getName());
+
+    private void run() {
+        ActionArguments args = ActionArguments.fromEnv();
+        LoggerConfig.loadDefaultConfig(args.logLevel());
+        logger.config(args.toString());
+
+        GpgSigner signer = new GpgSigner(args);
+        BundleCollector bundleBuilder = new BundleCollector(signer);
+        try {
+            logger.info("Running!");
+            signer.loadSigningCertificate();
+
+            List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
+            logger.info("Found bundles:");
+            bundles.forEach(b -> logger.info(" " + b));
         } catch (Exception e) {
-            System.err.println("Publisher failed initialization: " + e.getMessage());
+            logger.warning("Publisher failed initialization: " + e.getMessage());
             System.exit(1);
         } finally {
             signer.cleanup();
         }
     }
 
-    public static void main() {
+    /**
+     * Action main method.
+     *
+     * @param args the arguments from the command line, ignored
+     */
+    public static void main(String[] args) {
         new NexusPublisher().run();
     }
 }

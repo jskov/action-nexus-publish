@@ -3,6 +3,15 @@ author: "Jesper Skov (jskov@mada.dk)"
 description: "Publish maven artifacts to Nexus"
 
 inputs:
+  log_level:
+    description: 'Log level (for JUL framework)'
+    required: false
+    default: 'info'
+    type: choice
+    options:
+      - info
+      - finest
+
   search_directory:
     required: true
     description: "FIXME search dir"
@@ -10,6 +19,7 @@ inputs:
   companion_suffixes:
     required: false
     description: "FIXME companion suffixes"
+    default: ".jar, .module, -javadoc.jar, -sources.jar"
 
   signing_key:
     required: true
@@ -32,11 +42,13 @@ runs:
       run: |-
         classes_dir=$(mktemp -d)
         (cd ${{ github.action_path }}/src/main/java ; javac -d $classes_dir $(find . -name \*.java))
-        java -cp $classes_dir dk.mada.action.NexusPublisher arg1 arg2 argN
+        cp ${{ github.action_path }}/src/main/resources/logging.properties $classes_dir
+        java -cp $classes_dir dk.mada.action.NexusPublisher
         rm -rf $classes_dir
       env:
         SEARCH_DIR: ${{ inputs.search_directory }}
         COMPANION_SUFFIXES: ${{ inputs.companion_suffixes }}
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
+        LOG_LEVEL: ${{ inputs.log_level }}
         

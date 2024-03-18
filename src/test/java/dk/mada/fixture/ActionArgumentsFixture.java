@@ -1,4 +1,4 @@
-package dk.fixture;
+package dk.mada.fixture;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,8 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
 
 import dk.mada.action.ActionArguments;
+import dk.mada.action.util.LoggerConfig;
 
 /**
  * Fixture for creating action arguments for tests.
@@ -19,9 +21,12 @@ public final class ActionArgumentsFixture {
 
     /** {@return action arguments based on test certificate} */
     public static ActionArguments withGpg() {
+        LoggerConfig.loadConfig("/test-logging.properties");
+
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
-        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes);
+        return new ActionArguments(readResource("/gpg-testkey.txt"), readResource("/gpg-testkey-password.txt"), tmpDir, emptySuffixes,
+                Level.FINEST);
     }
 
     private static String readResource(String path) {

@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
@@ -13,13 +17,29 @@ import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
 
 public final class GpgSigner {
-    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 3;
+    private static Logger logger = Logger.getLogger(GpgSigner.class.getName());
+    /** The GPG command timeout in seconds. */
+    private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
 
+    /** The action arguments provided by the user. */
+    private final ActionArguments actionArgs;
+    /** The GNUPG_HOME directory. */
     private final Path gnupghomeDir;
+    /** The environment provided when running GPG. */
     private final Map<String, String> gpgEnv;
 
-    public GpgSigner() {
+    /** The certificate fingerprint. Found while loading certificate. */
+    private String certificateFingerprint;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param actionArgs the action arguments
+     */
+    public GpgSigner(ActionArguments actionArgs) {
         try {
+            this.actionArgs = actionArgs;
+
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
             gpgEnv = Map.of(
@@ -46,10 +66,9 @@ public final class GpgSigner {
      *
      * After loading, the private certificate is tweaked to be ultimately trusted.
      *
-     * @param actionArgs the action arguments
      * @return the signature fingerprint
      */
-    public String loadSigningCertificate(ActionArguments actionArgs) {
+    public String loadSigningCertificate() {
         try {
             // Import the certificate
             Path keyFile = gnupghomeDir.resolve("private.txt");
@@ -58,17 +77,68 @@ public final class GpgSigner {
 
             // Extract fingerprint of the certificate
             CmdResult idResult = runCmd("gpg", "-K", "--with-colons");
-            String fingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
+            certificateFingerprint = GpgDetailType.FINGERPRINT.extractFrom(idResult.output()).replace(":", "");
 
             // Mark the certificate as ultimately trusted
             Path ownerTrustFile = gnupghomeDir.resolve("otrust.txt");
-            Files.writeString(ownerTrustFile, fingerprint + ":6:\n");
+            Files.writeString(ownerTrustFile, certificateFingerprint + ":6:\n");
             runCmd("gpg", "--import-ownertrust", ownerTrustFile.toAbsolutePath().toString());
 
-            return fingerprint;
+            return certificateFingerprint;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load private GPG key", e);
         }
+    }
+
+    /**
+     * Signs the file with the loaded GPG certificate.
+     *
+     * @param file the file to sign
+     * @return the created signature file
+     */
+    public Path sign(Path file) {
+        String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
+
+        logger.fine("signing " + file);
+
+        Path signatureFile = file.getParent().resolve(file.getFileName().toString() + ".asc");
+        if (Files.exists(signatureFile)) {
+            throw new IllegalStateException("Signature already exists for " + file);
+        }
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add("gpg");
+        if (logger.isLoggable(Level.FINEST)) {
+            cmd.add("-vv");
+        } else if (logger.isLoggable(Level.FINER)) {
+            cmd.add("-v");
+        }
+        cmd.addAll(List.of(
+                "--batch",
+                "--no-tty",
+                "--yes",
+                "--pinentry-mode", "loopback",
+                "--passphrase-fd", "0",
+                "-u", fingerprint,
+                "--detach-sign", "--armor",
+                file.toAbsolutePath().toString()));
+        runCmdWithInput(actionArgs.gpgPrivateKeySecret(), cmd);
+
+        if (!Files.exists(signatureFile)) {
+            throw new IllegalStateException("Created signature not found: " + signatureFile);
+        }
+
+        return signatureFile;
+    }
+
+    private CmdResult runCmd(String... args) {
+        return runCmdWithInput(null, List.of(args));
+    }
+
+    private CmdResult runCmdWithInput(String stdin, List<String> args) {
+        var input = new CmdInput(args, gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
+        CmdResult res = ExternalCmdRunner.runCmd(input);
+        return res;
     }
 
     /**
@@ -80,6 +150,7 @@ public final class GpgSigner {
         /** The certificate fingerprint. */
         FINGERPRINT("fpr");
 
+        /** The column prefix used for this detail. */
         private final String prefix;
 
         GpgDetailType(String prefix) {
@@ -99,15 +170,5 @@ public final class GpgSigner {
                     .findFirst()
                     .orElseThrow();
         }
-    }
-
-    private CmdResult runCmd(String... args) {
-        return runCmd(null, List.of(args), GPG_DEFAULT_TIMEOUT_SECONDS);
-    }
-
-    private CmdResult runCmd(String stdin, List<String> command, int timeoutSeconds) {
-        var input = new CmdInput(command, gnupghomeDir, stdin, gpgEnv, timeoutSeconds);
-        CmdResult res = ExternalCmdRunner.runCmd(input);
-        return res;
     }
 }
