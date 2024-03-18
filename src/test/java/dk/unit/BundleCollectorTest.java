@@ -28,6 +28,9 @@ class BundleCollectorTest {
     private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
     private final BundleCollector sut = new BundleCollector(signer);
 
+    /**
+     * Tests that files can be signed.
+     */
     @Test
     void canSignFiles() throws IOException {
         Files.copy(Paths.get("gradle/wrapper/gradle-wrapper.jar"), testDir.resolve("bundle.jar"));
@@ -35,12 +38,24 @@ class BundleCollectorTest {
         signer.loadSigningCertificate();
 
         List<Bundle> x = sut.collectBundles(testDir, List.of(".jar"));
-        System.out.println("GOt " + x);
 
+        assertThat(x)
+                .first()
+                .satisfies(bundle -> {
+                    assertThat(bundle.signatures())
+                            .map(testDir::relativize)
+                            .map(Path::toString)
+                            .containsExactlyInAnyOrder("bundle.pom.asc", "bundle.jar.asc");
+                    assertThat(bundle.signatures())
+                            .allSatisfy(p -> assertThat(p).isNotEmptyFile());
+                });
     }
 
+    /**
+     * Tests that bundle asset filtering works.
+     */
     @Test
-    void canCollectBundle() throws IOException {
+    void canCollectRelevantBundleAssets() throws IOException {
         setupFileTree(
                 "root.jar", // ignored
                 "dir/a.pom",

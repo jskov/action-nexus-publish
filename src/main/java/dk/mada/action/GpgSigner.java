@@ -92,12 +92,17 @@ public final class GpgSigner {
      * Signs the file with the loaded GPG certificate.
      *
      * @param file the file to sign
+     * @return the created signature file
      */
-    public void sign(Path file) {
+    public Path sign(Path file) {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
         logger.fine("signing " + file);
 
+        Path signatureFile = file.getParent().resolve(file.getFileName().toString() + ".asc");
+        if (Files.exists(signatureFile)) {
+            throw new IllegalStateException("Signature already exists for " + file);
+        }
         // "--quiet",
         CmdResult o = runCmdWithInput(actionArgs.gpgPrivateKeySecret(),
                 "gpg",
@@ -114,6 +119,12 @@ public final class GpgSigner {
 
         // FIXME: debug flag, logger
         logger.finest("res: " + o.output());
+
+        if (!Files.exists(signatureFile)) {
+            throw new IllegalStateException("Created signature not found: " + signatureFile);
+        }
+
+        return signatureFile;
     }
 
     private CmdResult runCmd(String... args) {
@@ -135,6 +146,7 @@ public final class GpgSigner {
         /** The certificate fingerprint. */
         FINGERPRINT("fpr");
 
+        /** The column prefix used for this detail. */
         private final String prefix;
 
         GpgDetailType(String prefix) {
