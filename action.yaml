@@ -29,6 +29,14 @@ inputs:
     required: true
     description: "FIXME secret"
 
+  ossrh_username:
+    required: true
+    description: "FIXME OSSRH_USERNAME"
+
+  ossrh_token:
+    required: true
+    description: "FIXME OSSRH_TOKEN"
+
 runs:
   using: "composite"
   steps:
@@ -51,4 +59,6 @@ runs:
         SIGNING_KEY: ${{ inputs.signing_key }}
         SIGNING_KEY_SECRET: ${{ inputs.signing_key_secret }}
         LOG_LEVEL: ${{ inputs.log_level }}
+        OSSRH_USERNAME: ${{ inputs.ossrh_username }}
+        OSSRH_TOKEN: ${{ inputs.ossrh_token }}
         

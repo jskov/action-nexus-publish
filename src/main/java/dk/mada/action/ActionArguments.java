@@ -17,9 +17,11 @@ import java.util.stream.Stream;
  * @param searchDir           the directory to search for POM files
  * @param companionSuffixes   the companion suffixes to include when finding a POM file
  * @param logLevel            the logging level to use
+ * @param ossrhUser           the OSSRH user
+ * @param ossrhToken          the OSSRH token
  */
 public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, Path searchDir, List<String> companionSuffixes,
-        Level logLevel) {
+        Level logLevel, String ossrhUser, String ossrhToken) {
 
     /** The PGP header expected to be in the GPG key. */
     private static final String BEGIN_PGP_PRIVATE_KEY_BLOCK = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
@@ -33,6 +35,8 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
         Objects.requireNonNull(searchDir, "The search directory must be specified");
         Objects.requireNonNull(companionSuffixes, "The companion suffixes must not be null");
         Objects.requireNonNull(logLevel, "The logging level must not be null");
+        Objects.requireNonNull(ossrhUser, "The OSSRH user must not be null");
+        Objects.requireNonNull(ossrhToken, "The OSSRH token must not be null");
 
         if (!gpgPrivateKey.contains(BEGIN_PGP_PRIVATE_KEY_BLOCK)) {
             throw new IllegalArgumentException("Provided GPG key does not contain private header: " + BEGIN_PGP_PRIVATE_KEY_BLOCK);
@@ -54,7 +58,8 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
                 .toList();
         Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
         Level logLevel = Level.parse(getRequiredEnv("LOG_LEVEL").toUpperCase(Locale.ROOT));
-        return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes, logLevel);
+        return new ActionArguments(getRequiredEnv("SIGNING_KEY"), getRequiredEnv("SIGNING_KEY_SECRET"), searchDir, suffixes, logLevel,
+                getRequiredEnv("OSSRH_USERNAME"), getRequiredEnv("OSSRH_TOKEN"));
     }
 
     /**
@@ -72,6 +77,7 @@ public record ActionArguments(String gpgPrivateKey, String gpgPrivateKeySecret, 
 
     @Override
     public String toString() {
-        return "ActionArguments [searchDir=" + searchDir + ", companionSuffixes=" + companionSuffixes + "]";
+        return "ActionArguments [searchDir=" + searchDir + ", companionSuffixes=" + companionSuffixes + ", logLevel=" + logLevel
+                + ", ossrhUser=" + ossrhUser + "]";
     }
 }
