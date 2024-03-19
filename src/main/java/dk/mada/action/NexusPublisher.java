@@ -12,7 +12,7 @@ class NexusPublisher {
     private void run() {
         ActionArguments args = ActionArguments.fromEnv();
         LoggerConfig.loadDefaultConfig(args.logLevel());
-        logger.config(args.toString());
+        logger.config(() -> args.toString());
 
         GpgSigner signer = new GpgSigner(args);
         BundleCollector bundleBuilder = new BundleCollector(signer);

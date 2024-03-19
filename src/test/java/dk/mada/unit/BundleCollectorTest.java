@@ -8,22 +8,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
-import dk.mada.fixture.ActionArgumentsFixture;
+import dk.mada.action.BundleCollector.BundleSource;
 import dk.mada.action.GpgSigner;
+import dk.mada.fixture.ActionArgumentsFixture;
 
 /**
  * Tests bundle collection - really the search for files.
  */
 class BundleCollectorTest {
     /** Temporary test directory. */
-    private @TempDir(cleanup = CleanupMode.NEVER) Path testDir;
+    private @TempDir Path testDir;
 
     /** The signer used for testing. */
     private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
@@ -39,18 +40,34 @@ class BundleCollectorTest {
         Files.createFile(testDir.resolve("bundle.pom"));
         signer.loadSigningCertificate();
 
-        List<Bundle> x = sut.collectBundles(testDir, List.of(".jar"));
+        List<Bundle> bundles = sut.collectBundles(testDir, List.of(".jar"));
 
-        assertThat(x)
+        assertThat(bundles)
                 .first()
                 .satisfies(bundle -> {
-                    assertThat(bundle.signatures())
+                    assertThat(bundle.files().signatures())
                             .map(testDir::relativize)
                             .map(Path::toString)
                             .containsExactlyInAnyOrder("bundle.pom.asc", "bundle.jar.asc");
-                    assertThat(bundle.signatures())
+                    assertThat(bundle.files().signatures())
                             .allSatisfy(p -> assertThat(p).isNotEmptyFile());
+                    assertThat(filesIn(bundle.bundleJar()))
+                            .containsExactlyInAnyOrder("bundle.pom", "bundle.jar", "bundle.pom.asc", "bundle.jar.asc");
                 });
+    }
+
+    /**
+     * Extracts filenames in jar-file
+     *
+     * @param jar the jar-file to list files in
+     * @return the files in the jar-file
+     */
+    private List<String> filesIn(Path jar) throws IOException {
+        try (JarFile jf = new JarFile(jar.toFile())) {
+            return jf.stream()
+                    .map(je -> je.getName())
+                    .toList();
+        }
     }
 
     /**
@@ -65,7 +82,7 @@ class BundleCollectorTest {
                 "dir/a-sources.jar",
                 "dir/a.module");
 
-        List<Bundle> foundBundles = new BundleCollector(null).findBundles(testDir, List.of(".module", "-sources.jar"));
+        List<BundleSource> foundBundles = new BundleCollector(null).findBundleSources(testDir, List.of(".module", "-sources.jar"));
         List<String> foundPaths = foundBundles.stream()
                 .flatMap(b -> toPaths(b).stream())
                 .toList();
@@ -73,10 +90,10 @@ class BundleCollectorTest {
                 .containsExactlyInAnyOrder("dir/a.pom", "dir/a-sources.jar", "dir/a.module");
     }
 
-    private List<String> toPaths(Bundle b) {
+    private List<String> toPaths(BundleSource bs) {
         List<Path> files = new ArrayList<>();
-        files.add(b.pom());
-        files.addAll(b.assets());
+        files.add(bs.pom());
+        files.addAll(bs.assets());
         return files.stream()
                 .map(p -> testDir.relativize(p).toString())
                 .toList();
