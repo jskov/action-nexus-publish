@@ -15,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.action.BundleCollector.BundleSource;
 import dk.mada.fixture.ActionArgumentsFixture;
 import dk.mada.action.GpgSigner;
 
@@ -39,16 +40,16 @@ class BundleCollectorTest {
         Files.createFile(testDir.resolve("bundle.pom"));
         signer.loadSigningCertificate();
 
-        List<Bundle> x = sut.collectBundles(testDir, List.of(".jar"));
+        List<Bundle> bundles = sut.collectBundles(testDir, List.of(".jar"));
 
-        assertThat(x)
+        assertThat(bundles)
                 .first()
                 .satisfies(bundle -> {
-                    assertThat(bundle.signatures())
+                    assertThat(bundle.files().signatures())
                             .map(testDir::relativize)
                             .map(Path::toString)
                             .containsExactlyInAnyOrder("bundle.pom.asc", "bundle.jar.asc");
-                    assertThat(bundle.signatures())
+                    assertThat(bundle.files().signatures())
                             .allSatisfy(p -> assertThat(p).isNotEmptyFile());
                 });
     }
@@ -65,7 +66,7 @@ class BundleCollectorTest {
                 "dir/a-sources.jar",
                 "dir/a.module");
 
-        List<Bundle> foundBundles = new BundleCollector(null).findBundles(testDir, List.of(".module", "-sources.jar"));
+        List<BundleSource> foundBundles = new BundleCollector(null).findBundleSources(testDir, List.of(".module", "-sources.jar"));
         List<String> foundPaths = foundBundles.stream()
                 .flatMap(b -> toPaths(b).stream())
                 .toList();
@@ -73,10 +74,10 @@ class BundleCollectorTest {
                 .containsExactlyInAnyOrder("dir/a.pom", "dir/a-sources.jar", "dir/a.module");
     }
 
-    private List<String> toPaths(Bundle b) {
+    private List<String> toPaths(BundleSource bs) {
         List<Path> files = new ArrayList<>();
-        files.add(b.pom());
-        files.addAll(b.assets());
+        files.add(bs.pom());
+        files.addAll(bs.assets());
         return files.stream()
                 .map(p -> testDir.relativize(p).toString())
                 .toList();

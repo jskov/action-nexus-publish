@@ -30,19 +30,20 @@ public final class BundleCollector {
      * @return the collected bundles
      */
     public List<Bundle> collectBundles(Path searchDir, List<String> companionSuffixes) {
-        return findBundles(searchDir, companionSuffixes).stream()
+        return findBundleSources(searchDir, companionSuffixes).stream()
                 .map(this::signBundleFiles)
+                .map(this::packageBundle)
                 .toList();
     }
 
     /**
-     * Collects bundles in and below the search directory.
+     * Collects bundle sources in and below the search directory.
      *
      * @param searchDir         the search directory
      * @param companionSuffixes the suffixes to use for finding bundle assets
      * @return the collected bundles
      */
-    public List<Bundle> findBundles(Path searchDir, List<String> companionSuffixes) {
+    public List<BundleSource> findBundleSources(Path searchDir, List<String> companionSuffixes) {
         try (Stream<Path> files = Files.walk(searchDir)) {
             // First find the POMs
             List<Path> poms = files
@@ -52,21 +53,11 @@ public final class BundleCollector {
 
             // Then make bundles with the companions
             return poms.stream()
-                    .map(p -> makeBaseBundle(p, companionSuffixes))
+                    .map(p -> makeSourceBundle(p, companionSuffixes))
                     .toList();
         } catch (IOException e) {
             throw new IllegalStateException("Failed to build bundles in " + searchDir, e);
         }
-    }
-
-    /**
-     * A bundle to be uploaded.
-     *
-     * @param pom        the main POM file
-     * @param assets     a list of additional assets (may be empty)
-     * @param signatures a list of created signatures for the assets
-     */
-    public record Bundle(Path pom, List<Path> assets, List<Path> signatures) {
     }
 
     /**
@@ -76,22 +67,65 @@ public final class BundleCollector {
      *
      * @param pomFile           the main POM file
      * @param companionSuffixes the suffixes to find companion assets from
-     * @return the resulting bundle
+     * @return the resulting bundle source
      */
-    private Bundle makeBaseBundle(Path pomFile, List<String> companionSuffixes) {
+    private BundleSource makeSourceBundle(Path pomFile, List<String> companionSuffixes) {
         Path dir = pomFile.getParent();
         String basename = pomFile.getFileName().toString().replace(".pom", "");
         List<Path> companions = companionSuffixes.stream()
                 .map(suffix -> dir.resolve(basename + suffix))
                 .filter(Files::isRegularFile)
                 .toList();
-        return new Bundle(pomFile, companions, List.of());
+        return new BundleSource(pomFile, companions);
     }
 
-    private Bundle signBundleFiles(Bundle bundle) {
-        List<Path> signatures = Stream.concat(Stream.of(bundle.pom()), bundle.assets().stream())
+    /**
+     * Signs bundle source files.
+     *
+     * @param bundleSrc the bundle source
+     * @return all files to be included in the bundle (source + signatures)
+     */
+    private BundleFiles signBundleFiles(BundleSource bundleSrc) {
+        List<Path> signatures = Stream.concat(Stream.of(bundleSrc.pom()), bundleSrc.assets().stream())
                 .map(signer::sign)
                 .toList();
-        return new Bundle(bundle.pom(), bundle.assets(), signatures);
+        return new BundleFiles(bundleSrc, signatures);
+    }
+
+    /**
+     * Packages the bundle into a jar-file.
+     *
+     * @param bundleFiles the files to include in the jar-file
+     * @return the completed bundle
+     */
+    private Bundle packageBundle(BundleFiles bundleFiles) {
+        return new Bundle(bundleFiles.bundleSource.pom(), bundleFiles);
+    }
+
+    /**
+     * The packaged bundle.
+     *
+     * @param bundleJar the packaged bundle jar, containing all source and signature files
+     * @param files     the bundle constituents
+     */
+    public record Bundle(Path bundleJar, BundleFiles files) {
+    }
+
+    /**
+     * All files in the bundle (sources and signatures).
+     *
+     * @param bundleSource the original bundle source
+     * @param signatures   a list of created signatures for the assets
+     */
+    public record BundleFiles(BundleSource bundleSource, List<Path> signatures) {
+    }
+
+    /**
+     * The original source files of a bundle.
+     *
+     * @param pom    the main POM file
+     * @param assets a list of additional assets (may be empty)
+     */
+    public record BundleSource(Path pom, List<Path> assets) {
     }
 }
