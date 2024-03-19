@@ -99,7 +99,7 @@ public final class GpgSigner {
     public Path sign(Path file) {
         String fingerprint = Objects.requireNonNull(certificateFingerprint, "Need to load certificate!");
 
-        logger.fine("signing " + file);
+        logger.fine(() -> "signing " + file);
 
         Path signatureFile = file.getParent().resolve(file.getFileName().toString() + ".asc");
         if (Files.exists(signatureFile)) {
@@ -137,8 +137,7 @@ public final class GpgSigner {
 
     private CmdResult runCmdWithInput(String stdin, List<String> args) {
         var input = new CmdInput(args, gnupghomeDir, stdin, gpgEnv, GPG_DEFAULT_TIMEOUT_SECONDS);
-        CmdResult res = ExternalCmdRunner.runCmd(input);
-        return res;
+        return ExternalCmdRunner.runCmd(input);
     }
 
     /**

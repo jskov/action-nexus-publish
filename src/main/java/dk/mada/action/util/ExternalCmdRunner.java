@@ -58,7 +58,7 @@ public final class ExternalCmdRunner {
             if (execDir == null) {
                 execDir = TEMP_DIR;
             }
-            logger.fine("Run in " + execDir + "\ncommand: " + input.command());
+            logger.fine(() -> "Run in " + input.execDir() + "\ncommand: " + input.command());
 
             String stdin = input.stdin();
             Map<String, String> env = input.env();
@@ -88,7 +88,7 @@ public final class ExternalCmdRunner {
 
             int status = p.exitValue();
             String output = outputReader.lines().collect(Collectors.joining("\n"));
-            logger.finest("status: " + status + ", output: " + output);
+            logger.finest(() -> "status: " + status + ", output: " + output);
 
             if (status != 0) {
                 throw new IllegalStateException("Command failed!");
