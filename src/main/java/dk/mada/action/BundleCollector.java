@@ -1,9 +1,14 @@
 package dk.mada.action;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 
 /**
@@ -93,13 +98,34 @@ public final class BundleCollector {
     }
 
     /**
-     * Packages the bundle into a jar-file.
+     * Packages the bundle content into a jar-file.
      *
      * @param bundleFiles the files to include in the jar-file
      * @return the completed bundle
      */
     private Bundle packageBundle(BundleFiles bundleFiles) {
-        return new Bundle(bundleFiles.bundleSource.pom(), bundleFiles);
+        Path pom = bundleFiles.bundleSource.pom();
+        Path bundleJar = pom.getParent().resolve(pom.getFileName().toString().replace(".pom", "_bundle.jar"));
+
+        List<Path> allBundleFiles = new ArrayList<>();
+        allBundleFiles.add(pom);
+        allBundleFiles.addAll(bundleFiles.bundleSource().assets());
+        allBundleFiles.addAll(bundleFiles.signatures());
+
+        try (OutputStream os = Files.newOutputStream(bundleJar);
+                BufferedOutputStream bos = new BufferedOutputStream(os);
+                JarOutputStream jos = new JarOutputStream(bos)) {
+            for (Path f : allBundleFiles) {
+                JarEntry entry = new JarEntry(f.getFileName().toString());
+                jos.putNextEntry(entry);
+                Files.copy(f, jos);
+                jos.closeEntry();
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to package bundles into " + bundleJar, e);
+        }
+
+        return new Bundle(bundleJar, bundleFiles);
     }
 
     /**
