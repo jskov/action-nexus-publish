@@ -15,10 +15,11 @@ import dk.mada.action.util.EphemeralCookieHandler;
 
 public class MavenCentralDao {
     private static Logger logger = Logger.getLogger(MavenCentralDao.class.getName());
-
+    private static final String OSSRH_BASE_URL = "https://s01.oss.sonatype.org";
     /** The action arguments, containing OSSRH credentials. */
     private final ActionArguments actionArguments;
-
+    /** The http client. */
+    private final HttpClient client;
     /**
      * Constructs new instance.
      *
@@ -26,34 +27,41 @@ public class MavenCentralDao {
      */
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
+
+        CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
+        client = HttpClient.newBuilder()
+                .followRedirects(Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(10))
+                .cookieHandler(cookieHandler)
+                .build();
     }
 
     public void go() {
-
         try {
-            CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
-
-            HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(Redirect.NORMAL)
-                    .connectTimeout(Duration.ofSeconds(20))
-                    .cookieHandler(cookieHandler)
-                    .build();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://s01.oss.sonatype.org/service/local/authentication/login"))
-                    .timeout(Duration.ofSeconds(30))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", actionArguments.ossrhCredentials().asBasicAuth())
-                    .GET()
-                    .build();
-            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login");
             System.out.println(response.statusCode());
             System.out.println(response.body());
+            System.out.println("----");
+            
+            HttpResponse<String> r2 = get(OSSRH_BASE_URL + "/service/local/staging/repository");
+            System.out.println(r2.statusCode());
+            System.out.println(r2.body());
         } catch (IOException e) {
             throw new IllegalStateException("OSSHR access failed", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("OSSHR access interrupted", e);
         }
+    }
+    
+    private HttpResponse<String> get(String url) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json")
+                .header("Authorization", actionArguments.ossrhCredentials().asBasicAuth())
+                .GET()
+                .build();
+        return client.send(request, BodyHandlers.ofString());
     }
 }
