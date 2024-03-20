@@ -17,7 +17,7 @@ import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.BundleCollector.BundleSource;
 import dk.mada.action.GpgSigner;
-import dk.mada.fixture.ActionArgumentsFixture;
+import dk.mada.fixture.ArgumentsFixture;
 
 /**
  * Tests bundle collection - really the search for files.
@@ -27,7 +27,7 @@ class BundleCollectorTest {
     private @TempDir Path testDir;
 
     /** The signer used for testing. */
-    private final GpgSigner signer = new GpgSigner(ActionArgumentsFixture.withGpg());
+    private final GpgSigner signer = new GpgSigner(ArgumentsFixture.gpgCert());
     /** The subject under test - the collector. */
     private final BundleCollector sut = new BundleCollector(signer);
 

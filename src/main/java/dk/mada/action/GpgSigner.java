@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import dk.mada.action.ActionArguments.GpgCertificate;
 import dk.mada.action.util.DirectoryDeleter;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
@@ -21,8 +22,8 @@ public final class GpgSigner {
     /** The GPG command timeout in seconds. */
     private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
 
-    /** The action arguments provided by the user. */
-    private final ActionArguments actionArgs;
+    /** The GPG certificate. */
+    private final GpgCertificate gpgCertificate;
     /** The GNUPG_HOME directory. */
     private final Path gnupghomeDir;
     /** The environment provided when running GPG. */
@@ -34,11 +35,11 @@ public final class GpgSigner {
     /**
      * Creates a new instance.
      *
-     * @param actionArgs the action arguments
+     * @param gpgCertificate the GPG certificate
      */
-    public GpgSigner(ActionArguments actionArgs) {
+    public GpgSigner(GpgCertificate gpgCertificate) {
         try {
-            this.actionArgs = actionArgs;
+            this.gpgCertificate = gpgCertificate;
 
             gnupghomeDir = Files.createTempDirectory("_gnupghome-",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
@@ -72,7 +73,7 @@ public final class GpgSigner {
         try {
             // Import the certificate
             Path keyFile = gnupghomeDir.resolve("private.txt");
-            Files.writeString(keyFile, actionArgs.gpgPrivateKey());
+            Files.writeString(keyFile, gpgCertificate.key());
             runCmd("gpg", "--import", "--batch", keyFile.toAbsolutePath().toString());
 
             // Extract fingerprint of the certificate
@@ -122,7 +123,7 @@ public final class GpgSigner {
                 "-u", fingerprint,
                 "--detach-sign", "--armor",
                 file.toAbsolutePath().toString()));
-        runCmdWithInput(actionArgs.gpgPrivateKeySecret(), cmd);
+        runCmdWithInput(gpgCertificate.secret(), cmd);
 
         if (!Files.exists(signatureFile)) {
             throw new IllegalStateException("Created signature not found: " + signatureFile);

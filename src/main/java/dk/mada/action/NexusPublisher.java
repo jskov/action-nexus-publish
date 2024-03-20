@@ -14,7 +14,7 @@ class NexusPublisher {
         LoggerConfig.loadDefaultConfig(args.logLevel());
         logger.config(() -> args.toString());
 
-        GpgSigner signer = new GpgSigner(args);
+        GpgSigner signer = new GpgSigner(args.gpgCertificate());
         BundleCollector bundleBuilder = new BundleCollector(signer);
         try {
             logger.info("Running!");
