@@ -25,6 +25,6 @@ java {
     }
 }
 
-test { 
+test {
     useJUnitPlatform()
 }

@@ -31,7 +31,9 @@ public final class EphemeralCookieHandler {
      * An ephemeral cookie store, good for the life-time of the JVM.
      */
     private static final class EphemeralCookieStore implements CookieStore {
+        /** The cookies, indexed by hostname. */
         private final Map<String, Set<HttpCookie>> cookies = new HashMap<>();
+        /** The origin URI for stored cookies. */
         private final Map<HttpCookie, URI> cookieOrigins = new HashMap<>();
 
         @Override
