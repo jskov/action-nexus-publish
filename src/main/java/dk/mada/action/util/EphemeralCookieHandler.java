@@ -6,7 +6,11 @@ import java.net.CookiePolicy;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -27,29 +31,41 @@ public final class EphemeralCookieHandler {
      * An ephemeral cookie store, good for the life-time of the JVM.
      */
     private static final class EphemeralCookieStore implements CookieStore {
+        private final Map<String, Set<HttpCookie>> cookies = new HashMap<>();
+        private final Map<HttpCookie, URI> cookieOrigins = new HashMap<>();
+
         @Override
         public void add(URI uri, HttpCookie cookie) {
             logger.info(() -> "cookie: add url:" + uri + ", name:" + cookie.getName());
+            cookies.computeIfAbsent(uri.getHost(), k -> new HashSet<>())
+                    .add(cookie);
+            cookieOrigins.put(cookie, uri);
         }
 
+        // TODO: need to also filter by HttpCookie:domainMatches
         @Override
         public List<HttpCookie> get(URI uri) {
             logger.info(() -> "cookie get: " + uri);
-            return List.of();
+            return cookies.computeIfAbsent(uri.getHost(), k -> new HashSet<>()).stream()
+                    .filter(cookie -> !cookie.hasExpired())
+                    .toList();
         }
 
         @Override
         public List<HttpCookie> getCookies() {
             logger.info("cookie: get all");
-            return List.of();
+            return cookies.values().stream()
+                    .flatMap(Set::stream)
+                    .toList();
         }
 
         @Override
         public List<URI> getURIs() {
             logger.info("cookie: get uris");
-            return List.of();
+            return List.copyOf(cookieOrigins.values());
         }
 
+        // TODO
         @Override
         public boolean remove(URI uri, HttpCookie cookie) {
             logger.info(() -> "cookie: remove uri:" + uri + ", name:" + cookie.getName());
