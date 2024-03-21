@@ -10,6 +10,7 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -32,8 +33,7 @@ public class MavenCentralDao {
      */
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
-        System.setProperty("jdk.httpclient.HttpClient.log", "content");
-        System.setProperty("javax.net.debug", "all");
+        System.setProperty("javax.net.debug", "plaintext");
 
         CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
         client = HttpClient.newBuilder()
@@ -73,15 +73,14 @@ public class MavenCentralDao {
     }
 
     private HttpResponse<String> uploadBundle(Path jar) throws IOException, InterruptedException {
-        String boundaryMarker = "-------AaB03xyz"; // arbitrary, from https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
+        String boundaryMarker = "AaB03xyz"; // arbitrary, from https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
         String mimeBoundaryMarker = "\r\n";
         BodyPublisher formMarker = BodyPublishers.ofString("--" + boundaryMarker + mimeBoundaryMarker);
         BodyPublisher formDisposition = BodyPublishers
                 .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeBoundaryMarker);
-        BodyPublisher formType = BodyPublishers.ofString("Content-Type: application/octet-stream" + mimeBoundaryMarker);
-//        Content-Transfer-Encoding: binary
-        BodyPublisher formData = BodyPublishers.ofFile(jar);
+        BodyPublisher formType = BodyPublishers.ofString("Content-Type: " + Files.probeContentType(jar) + mimeBoundaryMarker);
 
+        BodyPublisher formData = BodyPublishers.ofFile(jar);
         BodyPublisher formComplete = BodyPublishers.concat(formMarker, formDisposition, formType, formData, formMarker);
         
         HttpRequest request = HttpRequest.newBuilder()
