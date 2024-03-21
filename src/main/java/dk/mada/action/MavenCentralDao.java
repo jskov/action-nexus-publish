@@ -10,6 +10,7 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -33,7 +34,7 @@ public class MavenCentralDao {
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
         System.setProperty("javax.net.debug", "plaintext");
-        
+
         CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
         client = HttpClient.newBuilder()
                 .followRedirects(Redirect.NORMAL)
@@ -80,15 +81,20 @@ public class MavenCentralDao {
         BodyPublisher formEndMarker = BodyPublishers.ofString("--" + boundaryMarker + "--" + mimeBoundaryMarker);
         BodyPublisher formDisposition = BodyPublishers
                 .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeBoundaryMarker);
-//        String fileContentType = Files.probeContentType(jar);
-        String fileContentType = "application/octet-stream";
+        String fileContentType = Files.probeContentType(jar);
         BodyPublisher formType = BodyPublishers.ofString("Content-Type: " + fileContentType + mimeBoundaryMarker);
         BodyPublisher boundary = BodyPublishers.ofString(mimeBoundaryMarker);
 
         BodyPublisher formData = BodyPublishers.ofFile(jar);
-        BodyPublisher formComplete = BodyPublishers.concat(formStartMarker, formDisposition, formType, boundary, formData, boundary, formEndMarker);
-        //BodyPublisher oneSection = BodyPublishers.fromPublisher(formComplete);
-        
+        BodyPublisher formComplete = BodyPublishers.concat(
+                formStartMarker,
+                formDisposition,
+                formType,
+                boundary,
+                formData,
+                boundary,
+                formEndMarker);
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
                 .timeout(Duration.ofSeconds(30))
