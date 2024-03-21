@@ -24,7 +24,8 @@ public class MavenCentralDao {
     /** The action arguments, containing OSSRH credentials. */
     private final ActionArguments actionArguments;
     /** The http client. */
-    private final HttpClient client;
+//    private final HttpClient client;
+    private CookieHandler cookieHandler;
 
     /**
      * Constructs new instance.
@@ -35,14 +36,18 @@ public class MavenCentralDao {
         this.actionArguments = actionArguments;
         System.setProperty("javax.net.debug", "plaintext");
 
-        CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
-        client = HttpClient.newBuilder()
+        cookieHandler = EphemeralCookieHandler.newAcceptAll();
+        
+    }
+
+    private HttpClient newClient() {
+        return HttpClient.newBuilder()
                 .followRedirects(Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(10))
                 .cookieHandler(cookieHandler)
                 .build();
     }
-
+    
     public void go() {
         try {
             HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login");
@@ -69,19 +74,26 @@ public class MavenCentralDao {
                 .header("Authorization", actionArguments.ossrhCredentials().asBasicAuth())
                 .GET()
                 .build();
-        return client.send(request, BodyHandlers.ofString());
+        return newClient().send(request, BodyHandlers.ofString());
     }
 
     private HttpResponse<String> uploadBundle(Path jar) throws IOException, InterruptedException {
-        String boundaryMarker = "AaB03xyz"; // arbitrary, from https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
+        // As per https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2, the marker should be ASCII
+        // and not match anything in the encapsulated sections. Just using a random string (partly from the spec).
+        String boundaryMarker = "AaB03xyz30BaA";
         String mimeBoundaryMarker = "\r\n";
-        BodyPublisher formMarker = BodyPublishers.ofString("--" + boundaryMarker + mimeBoundaryMarker);
+        BodyPublisher formStartMarker = BodyPublishers.ofString("--" + boundaryMarker + mimeBoundaryMarker);
+        BodyPublisher formEndMarker = BodyPublishers.ofString("--" + boundaryMarker + "--" + mimeBoundaryMarker);
         BodyPublisher formDisposition = BodyPublishers
                 .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeBoundaryMarker);
-        BodyPublisher formType = BodyPublishers.ofString("Content-Type: " + Files.probeContentType(jar) + mimeBoundaryMarker);
+//        String fileContentType = Files.probeContentType(jar);
+        String fileContentType = "application/octet-stream";
+        BodyPublisher formType = BodyPublishers.ofString("Content-Type: " + fileContentType + mimeBoundaryMarker);
+        BodyPublisher boundary = BodyPublishers.ofString(mimeBoundaryMarker);
 
         BodyPublisher formData = BodyPublishers.ofFile(jar);
-        BodyPublisher formComplete = BodyPublishers.concat(formMarker, formDisposition, formType, formData, formMarker);
+        BodyPublisher formComplete = BodyPublishers.concat(formStartMarker, formDisposition, formType, boundary, formData, boundary, formEndMarker);
+        //BodyPublisher oneSection = BodyPublishers.fromPublisher(formComplete);
         
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
@@ -89,6 +101,6 @@ public class MavenCentralDao {
                 .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
                 .POST(formComplete)
                 .build();
-        return client.send(request, BodyHandlers.ofString());
+        return newClient().send(request, BodyHandlers.ofString());
     }
 }
