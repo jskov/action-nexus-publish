@@ -32,6 +32,8 @@ public class MavenCentralDao {
      */
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
+        System.setProperty("jdk.httpclient.HttpClient.log", "content");
+        System.setProperty("javax.net.debug", "all");
 
         CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
         client = HttpClient.newBuilder()
@@ -48,7 +50,7 @@ public class MavenCentralDao {
             System.out.println(response.body());
             System.out.println("----");
 
-            HttpResponse<String> r2 = uploadBundle(Paths.get("./gradle/wrapper/gradle-wrapper.jar"));
+            HttpResponse<String> r2 = uploadBundle(Paths.get("src/test/data/bundle.jar"));
             System.out.println(r2.statusCode());
             System.out.println(r2.body());
         } catch (IOException e) {
@@ -71,16 +73,17 @@ public class MavenCentralDao {
     }
 
     private HttpResponse<String> uploadBundle(Path jar) throws IOException, InterruptedException {
-        String boundaryMarker = "AaB03xyz"; // arbitrary, from https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
-        BodyPublisher formMarker = BodyPublishers.ofString("-- " + boundaryMarker);
+        String boundaryMarker = "-------AaB03xyz"; // arbitrary, from https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
+        String mimeBoundaryMarker = "\r\n";
+        BodyPublisher formMarker = BodyPublishers.ofString("--" + boundaryMarker + mimeBoundaryMarker);
         BodyPublisher formDisposition = BodyPublishers
-                .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"");
-        BodyPublisher formType = BodyPublishers.ofString("Content-Type: application/binary");
+                .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeBoundaryMarker);
+        BodyPublisher formType = BodyPublishers.ofString("Content-Type: application/octet-stream" + mimeBoundaryMarker);
 //        Content-Transfer-Encoding: binary
         BodyPublisher formData = BodyPublishers.ofFile(jar);
 
         BodyPublisher formComplete = BodyPublishers.concat(formMarker, formDisposition, formType, formData, formMarker);
-
+        
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
                 .timeout(Duration.ofSeconds(30))
