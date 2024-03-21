@@ -44,62 +44,98 @@ public class MavenCentralDao {
     }
 
     public void go() {
+        authenticate();
+
+        HttpResponse<String> r2 = uploadBundle(Paths.get("src/test/data/bundle.jar"));
+        System.out.println(r2.statusCode());
+        System.out.println(r2.body());
+    }
+
+    private void authenticate() {
         try {
-            HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login");
+            HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login",
+                    "Content-Type", "application/json",
+                    "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
             System.out.println(response.statusCode());
             System.out.println(response.body());
-            System.out.println("----");
-
-            HttpResponse<String> r2 = uploadBundle(Paths.get("src/test/data/bundle.jar"));
-            System.out.println(r2.statusCode());
-            System.out.println(r2.body());
-        } catch (IOException e) {
-            throw new IllegalStateException("OSSHR access failed", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("OSSHR access interrupted", e);
+            throw new IllegalStateException("Interrupted while authenticating", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while authenticating", e);
         }
     }
 
-    private HttpResponse<String> get(String url) throws IOException, InterruptedException {
+    /**
+     * Uploads bundle.
+     *
+     * @param bundle the bundle to upload
+     */
+    private HttpResponse<String> uploadBundle(Path bundle) {
+        try {
+            return uploadFile(bundle);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while uploading bundle " + bundle, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while uploading bundle " + bundle, e);
+        }
+    }
+
+    /**
+     * Gets data from a URL
+     *
+     * @param url the url to read from
+     * @param headers headers to use (paired values)
+     * @return the http response
+     * @throws IOException          if the call failed
+     * @throws InterruptedException if the call was interrupted
+     */
+    private HttpResponse<String> get(String url, String... headers) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(30))
-                .header("Content-Type", "application/json")
-                .header("Authorization", actionArguments.ossrhCredentials().asBasicAuth())
+                .headers(headers)
                 .GET()
                 .build();
         return client.send(request, BodyHandlers.ofString());
     }
 
-    private HttpResponse<String> uploadBundle(Path jar) throws IOException, InterruptedException {
-        // As per https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2, the marker should be ASCII
-        // and not match anything in the encapsulated sections. Just using a random string (partly from the spec).
+    /**
+     * Uploads file using POST multipart/form-data.
+     *
+     * @see https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
+     *
+     * @param jar the file to upload
+     * @return the http response
+     * @throws IOException          if the access to data or upload failed
+     * @throws InterruptedException if the upload was interrupted
+     */
+    private HttpResponse<String> uploadFile(Path jar) throws IOException, InterruptedException {
+        // As per the MIME spec, the marker should be ASCII and not match anything in the encapsulated sections.
+        // Just using a random string (similar to the forms spec).
         String boundaryMarker = "AaB03xyz30BaA";
-        String mimeBoundaryMarker = "\r\n";
-        BodyPublisher formStartMarker = BodyPublishers.ofString("--" + boundaryMarker + mimeBoundaryMarker);
-        BodyPublisher formEndMarker = BodyPublishers.ofString("--" + boundaryMarker + "--" + mimeBoundaryMarker);
-        BodyPublisher formDisposition = BodyPublishers
-                .ofString("Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeBoundaryMarker);
-        String fileContentType = Files.probeContentType(jar);
-        BodyPublisher formType = BodyPublishers.ofString("Content-Type: " + fileContentType + mimeBoundaryMarker);
-        BodyPublisher boundary = BodyPublishers.ofString(mimeBoundaryMarker);
+        String mimeNewline = "\r\n";
+        String formIntro = ""
+                + "--" + boundaryMarker + mimeNewline
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeNewline
+                + "Content-Type: " + Files.probeContentType(jar) + mimeNewline
+                + mimeNewline; // (empty line between form instructions and the data)
 
-        BodyPublisher formData = BodyPublishers.ofFile(jar);
-        BodyPublisher formComplete = BodyPublishers.concat(
-                formStartMarker,
-                formDisposition,
-                formType,
-                boundary,
-                formData,
-                boundary,
-                formEndMarker);
+        String formOutro = ""
+                + mimeNewline // for the binary data
+                + "--" + boundaryMarker + "--" + mimeNewline;
+
+        BodyPublisher body = BodyPublishers.concat(
+                BodyPublishers.ofString(formIntro),
+                BodyPublishers.ofFile(jar),
+                BodyPublishers.ofString(formOutro));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
                 .timeout(Duration.ofSeconds(30))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
-                .POST(formComplete)
+                .POST(body)
                 .build();
         return client.send(request, BodyHandlers.ofString());
     }
