@@ -10,7 +10,6 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -24,8 +23,7 @@ public class MavenCentralDao {
     /** The action arguments, containing OSSRH credentials. */
     private final ActionArguments actionArguments;
     /** The http client. */
-//    private final HttpClient client;
-    private CookieHandler cookieHandler;
+    private final HttpClient client;
 
     /**
      * Constructs new instance.
@@ -35,19 +33,15 @@ public class MavenCentralDao {
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
         System.setProperty("javax.net.debug", "plaintext");
-
-        cookieHandler = EphemeralCookieHandler.newAcceptAll();
         
-    }
-
-    private HttpClient newClient() {
-        return HttpClient.newBuilder()
+        CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
+        client = HttpClient.newBuilder()
                 .followRedirects(Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(10))
                 .cookieHandler(cookieHandler)
                 .build();
     }
-    
+
     public void go() {
         try {
             HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login");
@@ -74,7 +68,7 @@ public class MavenCentralDao {
                 .header("Authorization", actionArguments.ossrhCredentials().asBasicAuth())
                 .GET()
                 .build();
-        return newClient().send(request, BodyHandlers.ofString());
+        return client.send(request, BodyHandlers.ofString());
     }
 
     private HttpResponse<String> uploadBundle(Path jar) throws IOException, InterruptedException {
@@ -101,6 +95,6 @@ public class MavenCentralDao {
                 .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
                 .POST(formComplete)
                 .build();
-        return newClient().send(request, BodyHandlers.ofString());
+        return client.send(request, BodyHandlers.ofString());
     }
 }
