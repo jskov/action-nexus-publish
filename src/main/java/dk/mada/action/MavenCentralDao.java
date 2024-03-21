@@ -2,6 +2,7 @@ package dk.mada.action;
 
 import java.io.IOException;
 import java.net.CookieHandler;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
@@ -33,7 +34,7 @@ public class MavenCentralDao {
      */
     public MavenCentralDao(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
-        System.setProperty("javax.net.debug", "plaintext");
+//        System.setProperty("javax.net.debug", "plaintext");
 
         CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
         client = HttpClient.newBuilder()
@@ -51,13 +52,16 @@ public class MavenCentralDao {
         System.out.println(r2.body());
     }
 
+    /**
+     * Authenticate with the server which will provide a cookie used in the remaining calls.
+     */
     private void authenticate() {
         try {
             HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login",
-                    "Content-Type", "application/json",
                     "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
-            System.out.println(response.statusCode());
-            System.out.println(response.body());
+            if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new IllegalStateException("Failed authenticating: " + response.body());
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while authenticating", e);
@@ -85,7 +89,7 @@ public class MavenCentralDao {
     /**
      * Gets data from a URL
      *
-     * @param url the url to read from
+     * @param url     the url to read from
      * @param headers headers to use (paired values)
      * @return the http response
      * @throws IOException          if the call failed
