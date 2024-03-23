@@ -15,12 +15,14 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.logging.Logger;
 
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.EphemeralCookieHandler;
 
 public class MavenCentralDao {
+//    private static final String XML_BEGIN_NOTIFICATIONS = "<notifications>";
     private static Logger logger = Logger.getLogger(MavenCentralDao.class.getName());
     /** The expected prefix in reponse when creating new repository. */
     private static final String RESPONSE_REPO_URI_PREFIX = "{\"repositoryUris\":[\"https://s01.oss.sonatype.org/content/repositories/";
@@ -55,24 +57,57 @@ public class MavenCentralDao {
     public void upload(Bundle bundle) {
         authenticate();
 
-        BundleRepositoryState r2 = uploadBundle(bundle);
-        
-        for (int i = 0; i < 3; i++) {
-            updateRepoState(r2);
+        BundleRepositoryState rs = uploadBundle(bundle);
+        waitForRepositoriesToSettle(List.of(rs));
+    }
+    
+    public void waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
+        List<BundleRepositoryState> updatedStates = bundleStates;
+        while (updatedStates.stream().anyMatch(rs -> rs.status().isTransitioning())) {
+            updatedStates = updatedStates.stream()
+                    .map(this::updateRepoState)
+                    .toList();
+
+            sleep(15000);
+        }
+    }
+    
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for repository state change", e);
+        }
+    }
+    
+    private BundleRepositoryState updateRepoState(BundleRepositoryState currentState) {
+        if (currentState.status == Status.FAILED_UPLOAD
+                || currentState.status == Status.FAILED_VALIDATION) {
+            return currentState;
         }
         
-        System.out.println("got " + r2);
-    }
-
-    private BundleRepositoryState updateRepoState(BundleRepositoryState currentState) {
         // curl -v -H 'Accept: application/json' /tmp/cookies.txt https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1104
         String repoId = currentState.assignedId;
         try {
             HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/staging/repository/" + repoId);
             System.out.println("Got: " + response.statusCode() + " : " + response.body());
-
-            Thread.sleep(15000);
-            return currentState;
+            RepositoryStateInfo x = parseRepositoryState(response);
+            // TODO: get status update time
+            // TODO: set user agent
+            Status newStatus;
+            if (x.transitioning) {
+                newStatus = currentState.status();
+            } else {
+                if (x.notifications == 0) {
+                    newStatus = Status.VALIDATED;
+                } else {
+                    newStatus = Status.FAILED_VALIDATION;
+                }
+            }
+            System.out.println("NEW STATUS: " + newStatus);
+            // does not break loop - state handling bad
+            return new BundleRepositoryState(currentState.bundle(), newStatus, currentState.assignedId(), currentState.info());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while getting status for repository " + repoId, e);
@@ -80,10 +115,45 @@ public class MavenCentralDao {
             throw new IllegalStateException("Failed while getting status for repository " + repoId, e);
         }
     }
+
+    private record RepositoryStateInfo(int notifications, boolean transitioning, String info) {
+    }
+    private RepositoryStateInfo parseRepositoryState(HttpResponse<String> response) {
+        int status = response.statusCode();
+        String body = response.body();
+        if (status != HttpURLConnection.HTTP_OK) {
+            return new RepositoryStateInfo(-1, false, "Failed repository probe; status: " + status + ", message: " + body);
+        }
+        return new RepositoryStateInfo(extractNotifications(body), extractTransitioning(body), body);
+    }
+
+    private boolean extractTransitioning(String body) {
+        return body.contains("<transitioning>true</transitioning>");
+    }
+    
+    private int extractNotifications(String body) {
+        try {
+            String notificationsBegin = "<notifications>";
+            int start = body.indexOf(notificationsBegin) + notificationsBegin.length();
+            int end = body.indexOf("</notifications>");
+            String notificationsTxt = body.substring(start, end);
+            return Integer.parseInt(notificationsTxt);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            throw new IllegalStateException("Failed to extract notifications: " + body, e);
+        }
+    }
+    
     
     public enum Status {
+        // Terminal states
         FAILED_UPLOAD,
-        UPLOADED
+        FAILED_VALIDATION,
+        UPLOADED,
+        VALIDATED;
+        
+        boolean isTransitioning() {
+            return this == UPLOADED || this == VALIDATED;
+        }
     }
     
     public record BundleRepositoryState(Bundle bundle, Status status, String assignedId, String info) {
