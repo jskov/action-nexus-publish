@@ -34,7 +34,7 @@ public class TestInstances {
         }
         return bundleCollector;
     }
-    
+
     public static MavenCentralDao mavenCentralDao() {
         if (mavenCentralDao == null) {
             mavenCentralDao = new MavenCentralDao(ArgumentsFixture.withGpg());

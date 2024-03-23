@@ -22,21 +22,22 @@ import dk.mada.fixture.TestInstances;
  * ActionArgumentsFixture:readOssrhCreds for how to provide the credentials.
  */
 public class OssrhOperationsTest {
-    @TempDir(cleanup = CleanupMode.NEVER) Path workDir;
-    
+    @TempDir(cleanup = CleanupMode.NEVER)
+    Path workDir;
+
     @Test
     void canGo() throws IOException {
         String pomName = "action-maven-publish-test-0.0.0.pom";
         Files.copy(Paths.get("src/test/data").resolve(pomName), workDir.resolve(pomName));
-        
+
         BundleCollector bundleCollector = TestInstances.bundleCollector();
         List<Bundle> x = bundleCollector.collectBundles(workDir, List.of());
-        
+
         Bundle pomBundle = x.getFirst();
         MavenCentralDao sut = TestInstances.mavenCentralDao();
 
         System.out.println("" + pomBundle.bundleJar());
-        
+
         sut.upload(pomBundle.bundleJar());
     }
 }
