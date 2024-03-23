@@ -16,8 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.BundleCollector.BundleSource;
-import dk.mada.action.GpgSigner;
-import dk.mada.fixture.ArgumentsFixture;
+import dk.mada.fixture.TestInstances;
 
 /**
  * Tests bundle collection - really the search for files.
@@ -26,10 +25,8 @@ class BundleCollectorTest {
     /** Temporary test directory. */
     private @TempDir Path testDir;
 
-    /** The signer used for testing. */
-    private final GpgSigner signer = new GpgSigner(ArgumentsFixture.gpgCert());
     /** The subject under test - the collector. */
-    private final BundleCollector sut = new BundleCollector(signer);
+    private final BundleCollector sut = TestInstances.bundleCollector();
 
     /**
      * Tests that files can be signed.
@@ -38,7 +35,6 @@ class BundleCollectorTest {
     void canSignFiles() throws IOException {
         Files.copy(Paths.get("gradle/wrapper/gradle-wrapper.jar"), testDir.resolve("bundle.jar"));
         Files.createFile(testDir.resolve("bundle.pom"));
-        signer.loadSigningCertificate();
 
         List<Bundle> bundles = sut.collectBundles(testDir, List.of(".jar"));
 

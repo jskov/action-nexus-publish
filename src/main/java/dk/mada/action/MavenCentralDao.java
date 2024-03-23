@@ -26,6 +26,8 @@ public class MavenCentralDao {
     private final ActionArguments actionArguments;
     /** The http client. */
     private final HttpClient client;
+    /** Flag for successful authentication with OSSRH. */
+    private boolean isAuthenticated;
 
     /**
      * Constructs new instance.
@@ -44,10 +46,10 @@ public class MavenCentralDao {
                 .build();
     }
 
-    public void go() {
+    public void upload(Path bundle) {
         authenticate();
 
-        HttpResponse<String> r2 = uploadBundle(Paths.get("src/test/data/bundle.jar"));
+        HttpResponse<String> r2 = uploadBundle(bundle);
         System.out.println(r2.statusCode());
         System.out.println(r2.body());
     }
@@ -56,12 +58,18 @@ public class MavenCentralDao {
      * Authenticate with the server which will provide a cookie used in the remaining calls.
      */
     private void authenticate() {
+        if (isAuthenticated) {
+            return;
+        }
+
         try {
             HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/authentication/login",
+                    "User-Agent", "jskov_action-maven-publish",
                     "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
             if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                 throw new IllegalStateException("Failed authenticating: " + response.body());
             }
+            isAuthenticated = true;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while authenticating", e);
