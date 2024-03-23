@@ -9,18 +9,24 @@ import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.logging.Logger;
 
+import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.EphemeralCookieHandler;
 
 public class MavenCentralDao {
     private static Logger logger = Logger.getLogger(MavenCentralDao.class.getName());
+    /** The expected prefix in reponse when creating new repository. */
+    private static final String RESPONSE_REPO_URI_PREFIX = "{\"repositoryUris\":[\"https://s01.oss.sonatype.org/content/repositories/";
+    /** Dummy id for unassigned repository. */
+    private static final String REPO_ID_UNASSIGNED = "_unassigned_";
+    /** The base URL for OSSRH. */
     private static final String OSSRH_BASE_URL = "https://s01.oss.sonatype.org";
     /** The action arguments, containing OSSRH credentials. */
     private final ActionArguments actionArguments;
@@ -46,14 +52,44 @@ public class MavenCentralDao {
                 .build();
     }
 
-    public void upload(Path bundle) {
+    public void upload(Bundle bundle) {
         authenticate();
 
-        HttpResponse<String> r2 = uploadBundle(bundle);
-        System.out.println(r2.statusCode());
-        System.out.println(r2.body());
+        BundleRepositoryState r2 = uploadBundle(bundle);
+        
+        for (int i = 0; i < 3; i++) {
+            updateRepoState(r2);
+        }
+        
+        System.out.println("got " + r2);
     }
 
+    private BundleRepositoryState updateRepoState(BundleRepositoryState currentState) {
+        // curl -v -H 'Accept: application/json' /tmp/cookies.txt https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1104
+        String repoId = currentState.assignedId;
+        try {
+            HttpResponse<String> response = get(OSSRH_BASE_URL + "/service/local/staging/repository/" + repoId);
+            System.out.println("Got: " + response.statusCode() + " : " + response.body());
+
+            Thread.sleep(15000);
+            return currentState;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while getting status for repository " + repoId, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while getting status for repository " + repoId, e);
+        }
+    }
+    
+    public enum Status {
+        FAILED_UPLOAD,
+        UPLOADED
+    }
+    
+    public record BundleRepositoryState(Bundle bundle, Status status, String assignedId, String info) {
+    }
+    
+    
     /**
      * Authenticate with the server which will provide a cookie used in the remaining calls.
      */
@@ -83,14 +119,34 @@ public class MavenCentralDao {
      *
      * @param bundle the bundle to upload
      */
-    private HttpResponse<String> uploadBundle(Path bundle) {
+    private BundleRepositoryState uploadBundle(Bundle bundle) {
         try {
-            return uploadFile(bundle);
+            HttpResponse<String> response = uploadFile(bundle.bundleJar());
+            return extractRepoId(bundle, response);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while uploading bundle " + bundle, e);
         } catch (IOException e) {
             throw new IllegalStateException("Failed while uploading bundle " + bundle, e);
+        }
+    }
+
+    /**
+     * Crudely extracts the assigned repository id from returned JSON.
+     *
+     * @param bundle the bundle that was uploaded
+     * @param response the HTTP response from OSRRH
+     * @return the resulting bundle repository state
+     */
+    private BundleRepositoryState extractRepoId(Bundle bundle, HttpResponse<String> response) {
+        int status = response.statusCode();
+        String body = response.body();
+
+        if (status == HttpURLConnection.HTTP_CREATED && body.startsWith(RESPONSE_REPO_URI_PREFIX)) {
+            String repoId = body.substring(RESPONSE_REPO_URI_PREFIX.length()).replace("\"]}", "");
+            return new BundleRepositoryState(bundle, Status.UPLOADED, repoId, "Assigned id: " + repoId);
+        } else {
+            return new BundleRepositoryState(bundle, Status.FAILED_UPLOAD, REPO_ID_UNASSIGNED, "Upload status: " + status + ", message: " + body);
         }
     }
 
@@ -104,10 +160,13 @@ public class MavenCentralDao {
      * @throws InterruptedException if the call was interrupted
      */
     private HttpResponse<String> get(String url, String... headers) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
+        Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(30))
-                .headers(headers)
+                .timeout(Duration.ofSeconds(30));
+        if (headers.length > 0) {
+            builder.headers(headers);
+        }
+        HttpRequest request = builder
                 .GET()
                 .build();
         return client.send(request, BodyHandlers.ofString());

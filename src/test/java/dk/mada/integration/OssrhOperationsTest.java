@@ -38,6 +38,6 @@ public class OssrhOperationsTest {
 
         System.out.println("" + pomBundle.bundleJar());
 
-        sut.upload(pomBundle.bundleJar());
+        sut.upload(pomBundle);
     }
 }
