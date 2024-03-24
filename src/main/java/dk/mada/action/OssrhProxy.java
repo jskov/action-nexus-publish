@@ -15,6 +15,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.EphemeralCookieHandler;
@@ -27,6 +28,8 @@ import dk.mada.action.util.EphemeralCookieHandler;
 public class OssrhProxy {
     /** The base URL for OSSRH. */
     private static final String OSSRH_BASE_URL = "https://s01.oss.sonatype.org";
+    /** The User Agent used by the proxy calls. */
+    private static final String[] USER_AGENT = new String[] { "User-Agent", "jskov_action-maven-publish" };
     /** The action arguments, containing OSSRH credentials. */
     private final ActionArguments actionArguments;
     /** The http client. */
@@ -81,7 +84,6 @@ public class OssrhProxy {
         }
 
         HttpResponse<String> response = doGet("/service/local/authentication/login",
-                "User-Agent", "jskov_action-maven-publish",
                 "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             throw new IllegalStateException("Failed authenticating: " + response.body());
@@ -100,7 +102,8 @@ public class OssrhProxy {
         try {
             Builder builder = HttpRequest.newBuilder()
                     .uri(URI.create(OSSRH_BASE_URL + path))
-                    .timeout(Duration.ofSeconds(30));
+                    .timeout(Duration.ofSeconds(30))
+                    .headers(USER_AGENT);
             if (headers.length > 0) {
                 builder.headers(headers);
             }
@@ -148,6 +151,7 @@ public class OssrhProxy {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
                     .timeout(Duration.ofSeconds(30))
+                    .headers(USER_AGENT)
                     .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
                     .POST(body)
                     .build();

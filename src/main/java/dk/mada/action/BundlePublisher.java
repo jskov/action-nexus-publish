@@ -75,7 +75,6 @@ public class BundlePublisher {
         System.out.println("Got: " + response.statusCode() + " : " + response.body());
         RepositoryStateInfo x = parseRepositoryState(response);
         // TODO: get status update time
-        // TODO: set user agent
         Status newStatus;
         if (x.transitioning) {
             newStatus = currentState.status();
