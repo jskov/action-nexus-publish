@@ -43,13 +43,15 @@ public class BundlePublisher {
 
     private void waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
         List<BundleRepositoryState> updatedStates = bundleStates;
-        while (updatedStates.stream().anyMatch(rs -> rs.status().isTransitioning())) {
+        do {
+            // TODO: initial time by number of bundles
+            // TODO: reduce wait for bundles with notifications (nearing conclusion)
+            sleep(5000);
             updatedStates = updatedStates.stream()
                     .map(this::updateRepoState)
                     .toList();
 
-            sleep(5000);
-        }
+        } while (updatedStates.stream().anyMatch(rs -> rs.status().isTransitioning()));
     }
 
     private void sleep(int millis) {
@@ -85,7 +87,6 @@ public class BundlePublisher {
             }
         }
         System.out.println("NEW STATUS: " + newStatus);
-        // does not break loop - state handling bad
         return new BundleRepositoryState(currentState.bundle(), newStatus, currentState.assignedId(), currentState.info());
     }
 
