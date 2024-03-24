@@ -1,8 +1,9 @@
 package dk.mada.fixture;
 
 import dk.mada.action.BundleCollector;
+import dk.mada.action.BundlePublisher;
 import dk.mada.action.GpgSigner;
-import dk.mada.action.MavenCentralDao;
+import dk.mada.action.OssrhProxy;
 
 /**
  * Provides test instances of the domain classes.
@@ -15,8 +16,10 @@ public class TestInstances {
     private static GpgSigner signer;
     /** The bundle collector test instance. */
     private static BundleCollector bundleCollector;
-    /** The Maven Central DAO test instance. */
-    private static MavenCentralDao mavenCentralDao;
+    /** The OSSRH proxy test instance. */
+    private static OssrhProxy ossrhProxy;
+    /** The bundle publisher test instance. */
+    private static BundlePublisher bundlePublisher;
 
     /** @{return an initialized GPG signer instance} */
     public static GpgSigner signer() {
@@ -35,10 +38,19 @@ public class TestInstances {
         return bundleCollector;
     }
 
-    public static MavenCentralDao mavenCentralDao() {
-        if (mavenCentralDao == null) {
-            mavenCentralDao = new MavenCentralDao(ArgumentsFixture.withGpg());
+    /** {@return an initialized ossrh proxy instance} */
+    public static OssrhProxy ossrhProxy() {
+        if (ossrhProxy == null) {
+            ossrhProxy = new OssrhProxy(ArgumentsFixture.withGpg());
         }
-        return mavenCentralDao;
+        return ossrhProxy;
+    }
+
+    /** {@return an initialized bundle publisher instance} */
+    public static BundlePublisher bundlePublisher() {
+        if (bundlePublisher == null) {
+            bundlePublisher = new BundlePublisher(ossrhProxy());
+        }
+        return bundlePublisher;
     }
 }

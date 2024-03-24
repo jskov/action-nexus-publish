@@ -1,0 +1,81 @@
+/tmp/junit16801435518671962341/action-maven-publish-test-0.0.0_bundle.jar
+[2024-03-23 18:25:10] [INFO] cookie get: https://s01.oss.sonatype.org/service/local/authentication/login 
+[2024-03-23 18:25:13] [INFO] cookie: add url:https://s01.oss.sonatype.org/service/local/authentication/login, name:NXSESSIONID 
+[2024-03-23 18:25:13] [INFO] cookie get: https://s01.oss.sonatype.org/service/local/staging/bundle_upload 
+[2024-03-23 18:25:19] [INFO] cookie get: https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1196 
+Got: 200 : <stagingProfileRepository>
+  <profileId>6ece6d896a3487</profileId>
+  <profileName>dk.mada</profileName>
+  <profileType>repository</profileType>
+  <repositoryId>dkmada-1196</repositoryId>
+  <type>open</type>
+  <policy>release</policy>
+  <userId>jskov</userId>
+  <userAgent>Java-http-client/21.0.2</userAgent>
+  <ipAddress>178.157.250.94</ipAddress>
+  <repositoryURI>https://s01.oss.sonatype.org/content/repositories/dkmada-1196</repositoryURI>
+  <created>2024-03-23T17:25:15.228Z</created>
+  <createdDate>Sat Mar 23 17:25:15 UTC 2024</createdDate>
+  <createdTimestamp>1711214715228</createdTimestamp>
+  <updated>2024-03-23T17:25:18.519Z</updated>
+  <updatedDate>Sat Mar 23 17:25:18 UTC 2024</updatedDate>
+  <updatedTimestamp>1711214718519</updatedTimestamp>
+  <description>Bundle upload</description>
+  <provider>maven2</provider>
+  <releaseRepositoryId>releases</releaseRepositoryId>
+  <releaseRepositoryName>Releases</releaseRepositoryName>
+  <notifications>0</notifications>
+  <transitioning>true</transitioning>
+</stagingProfileRepository>
+[2024-03-23 18:25:34] [INFO] cookie get: https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1196 
+Got: 200 : <stagingProfileRepository>
+  <profileId>6ece6d896a3487</profileId>
+  <profileName>dk.mada</profileName>
+  <profileType>repository</profileType>
+  <repositoryId>dkmada-1196</repositoryId>
+  <type>open</type>
+  <policy>release</policy>
+  <userId>jskov</userId>
+  <userAgent>Java-http-client/21.0.2</userAgent>
+  <ipAddress>178.157.250.94</ipAddress>
+  <repositoryURI>https://s01.oss.sonatype.org/content/repositories/dkmada-1196</repositoryURI>
+  <created>2024-03-23T17:25:15.228Z</created>
+  <createdDate>Sat Mar 23 17:25:15 UTC 2024</createdDate>
+  <createdTimestamp>1711214715228</createdTimestamp>
+  <updated>2024-03-23T17:25:33.393Z</updated>
+  <updatedDate>Sat Mar 23 17:25:33 UTC 2024</updatedDate>
+  <updatedTimestamp>1711214733393</updatedTimestamp>
+  <description>Bundle upload</description>
+  <provider>maven2</provider>
+  <releaseRepositoryId>releases</releaseRepositoryId>
+  <releaseRepositoryName>Releases</releaseRepositoryName>
+  <notifications>1</notifications>
+  <transitioning>true</transitioning>
+</stagingProfileRepository>
+[2024-03-23 18:25:49] [INFO] cookie get: https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1196 
+Got: 200 : <stagingProfileRepository>
+  <profileId>6ece6d896a3487</profileId>
+  <profileName>dk.mada</profileName>
+  <profileType>repository</profileType>
+  <repositoryId>dkmada-1196</repositoryId>
+  <type>open</type>
+  <policy>release</policy>
+  <userId>jskov</userId>
+  <userAgent>Java-http-client/21.0.2</userAgent>
+  <ipAddress>178.157.250.94</ipAddress>
+  <repositoryURI>https://s01.oss.sonatype.org/content/repositories/dkmada-1196</repositoryURI>
+  <created>2024-03-23T17:25:15.228Z</created>
+  <createdDate>Sat Mar 23 17:25:15 UTC 2024</createdDate>
+  <createdTimestamp>1711214715228</createdTimestamp>
+  <updated>2024-03-23T17:25:39.472Z</updated>
+  <updatedDate>Sat Mar 23 17:25:39 UTC 2024</updatedDate>
+  <updatedTimestamp>1711214739472</updatedTimestamp>
+  <description>Bundle upload</description>
+  <provider>maven2</provider>
+  <releaseRepositoryId>releases</releaseRepositoryId>
+  <releaseRepositoryName>Releases</releaseRepositoryName>
+  <notifications>3</notifications>
+  <transitioning>false</transitioning>
+</stagingProfileRepository>
+got BundleRepositoryState[bundle=Bundle[bundleJar=/tmp/junit16801435518671962341/action-maven-publish-test-0.0.0_bundle.jar, files=BundleFiles[bundleSource=BundleSource[pom=/tmp/junit16801435518671962341/action-maven-publish-test-0.0.0.pom, assets=[]], signatures=[/tmp/junit16801435518671962341/action-maven-publish-test-0.0.0.pom.asc]]], status=UPLOADED, assignedId=dkmada-1196, info=Assigned id: dkmada-1196]
+[2024-03-23 18:26:04] [INFO] Skipping cleanup of temp dir /tmp/junit16801435518671962341 due to cleanup mode configuration. 

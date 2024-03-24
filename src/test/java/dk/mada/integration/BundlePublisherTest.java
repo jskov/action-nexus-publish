@@ -7,12 +7,12 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
-import dk.mada.action.MavenCentralDao;
+import dk.mada.action.BundlePublisher;
+import dk.mada.action.BundlePublisher.TargetAction;
 import dk.mada.fixture.TestInstances;
 
 /**
@@ -21,8 +21,8 @@ import dk.mada.fixture.TestInstances;
  * If you want to run the tests yourself (after reviewing the code, naturally), see
  * ActionArgumentsFixture:readOssrhCreds for how to provide the credentials.
  */
-public class OssrhOperationsTest {
-    @TempDir(cleanup = CleanupMode.NEVER)
+public class BundlePublisherTest {
+    @TempDir
     Path workDir;
 
     @Test
@@ -31,13 +31,10 @@ public class OssrhOperationsTest {
         Files.copy(Paths.get("src/test/data").resolve(pomName), workDir.resolve(pomName));
 
         BundleCollector bundleCollector = TestInstances.bundleCollector();
-        List<Bundle> x = bundleCollector.collectBundles(workDir, List.of());
+        List<Bundle> bundles = bundleCollector.collectBundles(workDir, List.of());
 
-        Bundle pomBundle = x.getFirst();
-        MavenCentralDao sut = TestInstances.mavenCentralDao();
+        BundlePublisher sut = TestInstances.bundlePublisher();
 
-        System.out.println("" + pomBundle.bundleJar());
-
-        sut.upload(pomBundle);
+        sut.publish(bundles, TargetAction.LEAVE);
     }
 }
