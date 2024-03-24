@@ -21,6 +21,8 @@ import dk.mada.action.util.EphemeralCookieHandler;
 
 /**
  * A proxy for OSSRH web service.
+ *
+ * The first call will cause authentication which will provide a cookie token used for following calls.
  */
 public class OssrhProxy {
     /** The base URL for OSSRH. */
@@ -57,14 +59,7 @@ public class OssrhProxy {
      */
     public HttpResponse<String> get(String path, String... headers) {
         authenticate();
-        try {
-            return getRaw(path, headers);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while reading from " + path, e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed while reading from " + path, e);
-        }
+        return doGet(path, headers);
     }
 
     /**
@@ -74,75 +69,7 @@ public class OssrhProxy {
      */
     public HttpResponse<String> uploadBundle(Bundle bundle) {
         authenticate();
-        try {
-            return uploadRaw(bundle.bundleJar());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while uploading bundle " + bundle, e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed while uploading bundle " + bundle, e);
-        }
-    }
-
-    /**
-     * Gets data from a OSSRH path
-     *
-     * @param path    the url path to read from
-     * @param headers headers to use (paired values)
-     * @return the http response
-     * @throws IOException          if the call failed
-     * @throws InterruptedException if the call was interrupted
-     */
-    public HttpResponse<String> getRaw(String path, String... headers) throws IOException, InterruptedException {
-        Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(OSSRH_BASE_URL + path))
-                .timeout(Duration.ofSeconds(30));
-        if (headers.length > 0) {
-            builder.headers(headers);
-        }
-        HttpRequest request = builder
-                .GET()
-                .build();
-        return client.send(request, BodyHandlers.ofString());
-    }
-
-    /**
-     * Uploads file to OSSRH using POST multipart/form-data.
-     *
-     * @see https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
-     *
-     * @param jar the file to upload
-     * @return the http response
-     * @throws IOException          if the access to data or upload failed
-     * @throws InterruptedException if the upload was interrupted
-     */
-    private HttpResponse<String> uploadRaw(Path jar) throws IOException, InterruptedException {
-        // As per the MIME spec, the marker should be ASCII and not match anything in the encapsulated sections.
-        // Just using a random string (similar to the one in the forms spec).
-        String boundaryMarker = "AaB03xyz30BaA";
-        String mimeNewline = "\r\n";
-        String formIntro = ""
-                + "--" + boundaryMarker + mimeNewline
-                + "Content-Disposition: form-data; name=\"file\"; filename=\"" + jar.getFileName() + "\"" + mimeNewline
-                + "Content-Type: " + Files.probeContentType(jar) + mimeNewline
-                + mimeNewline; // (empty line between form instructions and the data)
-
-        String formOutro = ""
-                + mimeNewline // for the binary data
-                + "--" + boundaryMarker + "--" + mimeNewline;
-
-        BodyPublisher body = BodyPublishers.concat(
-                BodyPublishers.ofString(formIntro),
-                BodyPublishers.ofFile(jar),
-                BodyPublishers.ofString(formOutro));
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
-                .timeout(Duration.ofSeconds(30))
-                .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
-                .POST(body)
-                .build();
-        return client.send(request, BodyHandlers.ofString());
+        return doUpload(bundle.bundleJar());
     }
 
     /**
@@ -153,12 +80,83 @@ public class OssrhProxy {
             return;
         }
 
-        HttpResponse<String> response = get("/service/local/authentication/login",
+        HttpResponse<String> response = doGet("/service/local/authentication/login",
                 "User-Agent", "jskov_action-maven-publish",
                 "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             throw new IllegalStateException("Failed authenticating: " + response.body());
         }
         isAuthenticated = true;
+    }
+
+    /**
+     * Gets data from a OSSRH path.
+     *
+     * @param path    the url path to read from
+     * @param headers headers to use (paired values)
+     * @return the http response
+     */
+    private HttpResponse<String> doGet(String path, String... headers) {
+        try {
+            Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(OSSRH_BASE_URL + path))
+                    .timeout(Duration.ofSeconds(30));
+            if (headers.length > 0) {
+                builder.headers(headers);
+            }
+            HttpRequest request = builder
+                    .GET()
+                    .build();
+            return client.send(request, BodyHandlers.ofString());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while reading from " + path, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while reading from " + path, e);
+        }
+    }
+
+    /**
+     * Uploads file to OSSRH using POST multipart/form-data.
+     *
+     * @see https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
+     *
+     * @param bundle the bundle file to upload
+     * @return the http response
+     */
+    private HttpResponse<String> doUpload(Path bundle) {
+        try {
+            // As per the MIME spec, the marker should be ASCII and not match anything in the encapsulated sections.
+            // Just using a random string (similar to the one in the forms spec).
+            String boundaryMarker = "AaB03xyz30BaA";
+            String mimeNewline = "\r\n";
+            String formIntro = ""
+                    + "--" + boundaryMarker + mimeNewline
+                    + "Content-Disposition: form-data; name=\"file\"; filename=\"" + bundle.getFileName() + "\"" + mimeNewline
+                    + "Content-Type: " + Files.probeContentType(bundle) + mimeNewline
+                    + mimeNewline; // (empty line between form instructions and the data)
+
+            String formOutro = ""
+                    + mimeNewline // for the binary data
+                    + "--" + boundaryMarker + "--" + mimeNewline;
+
+            BodyPublisher body = BodyPublishers.concat(
+                    BodyPublishers.ofString(formIntro),
+                    BodyPublishers.ofFile(bundle),
+                    BodyPublishers.ofString(formOutro));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
+                    .timeout(Duration.ofSeconds(30))
+                    .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
+                    .POST(body)
+                    .build();
+            return client.send(request, BodyHandlers.ofString());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while uploading bundle " + bundle, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while uploading bundle " + bundle, e);
+        }
     }
 }

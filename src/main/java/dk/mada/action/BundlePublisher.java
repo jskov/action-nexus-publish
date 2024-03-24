@@ -15,10 +15,11 @@ public class BundlePublisher {
     private static final String RESPONSE_REPO_URI_PREFIX = "{\"repositoryUris\":[\"https://s01.oss.sonatype.org/content/repositories/";
     /** Dummy id for unassigned repository. */
     private static final String REPO_ID_UNASSIGNED = "_unassigned_";
-    private final OssrhProxy dao;
+    /** The OSSRH proxy. */
+    private final OssrhProxy proxy;
 
-    public BundlePublisher(OssrhProxy dao) {
-        this.dao = dao;
+    public BundlePublisher(OssrhProxy proxy) {
+        this.proxy = proxy;
     }
 
     public enum TargetAction {
@@ -28,17 +29,26 @@ public class BundlePublisher {
     }
 
     public void publish(List<Bundle> bundles, TargetAction action) {
+        List<BundleRepositoryState> initialBundleStates = bundles.stream()
+                .map(this::uploadBundle)
+                .toList();
 
+        waitForRepositoriesToSettle(initialBundleStates);
     }
 
-    public void waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
+    private BundleRepositoryState uploadBundle(Bundle bundle) {
+        HttpResponse<String> response = proxy.uploadBundle(bundle);
+        return extractRepoId(bundle, response);
+    }
+
+    private void waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
         List<BundleRepositoryState> updatedStates = bundleStates;
         while (updatedStates.stream().anyMatch(rs -> rs.status().isTransitioning())) {
             updatedStates = updatedStates.stream()
                     .map(this::updateRepoState)
                     .toList();
 
-            sleep(15000);
+            sleep(5000);
         }
     }
 
@@ -52,15 +62,14 @@ public class BundlePublisher {
     }
 
     private BundleRepositoryState updateRepoState(BundleRepositoryState currentState) {
-        if (currentState.status == Status.FAILED_UPLOAD
-                || currentState.status == Status.FAILED_VALIDATION) {
+        if (!currentState.status.isTransitioning()) {
             return currentState;
         }
 
         // curl -v -H 'Accept: application/json' /tmp/cookies.txt
         // https://s01.oss.sonatype.org/service/local/staging/repository/dkmada-1104
         String repoId = currentState.assignedId;
-        HttpResponse<String> response = dao.get("/service/local/staging/repository/" + repoId);
+        HttpResponse<String> response = proxy.get("/service/local/staging/repository/" + repoId);
         System.out.println("Got: " + response.statusCode() + " : " + response.body());
         RepositoryStateInfo x = parseRepositoryState(response);
         // TODO: get status update time
