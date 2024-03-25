@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 
 import dk.mada.action.BundleCollector;
@@ -24,6 +25,7 @@ import dk.mada.fixture.TestInstances;
  * If you want to run the tests yourself (after reviewing the code, naturally), see
  * ActionArgumentsFixture:readOssrhCreds for how to provide the credentials.
  */
+@EnabledIfEnvironmentVariable(named = "USERNAME", matches = "jskov", disabledReason = "Only runs locally")
 public class BundlePublisherTest {
     @TempDir
     private Path workDir;
