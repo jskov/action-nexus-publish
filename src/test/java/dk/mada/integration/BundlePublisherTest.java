@@ -1,5 +1,7 @@
 package dk.mada.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.BundlePublisher;
+import dk.mada.action.BundlePublisher.BundleRepositoryState;
 import dk.mada.action.BundlePublisher.TargetAction;
 import dk.mada.fixture.TestInstances;
 
@@ -35,6 +38,9 @@ public class BundlePublisherTest {
 
         BundlePublisher sut = TestInstances.bundlePublisher();
 
-        sut.publish(bundles, TargetAction.LEAVE);
+        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.DROP);
+
+        assertThat(states)
+                .isEmpty();
     }
 }

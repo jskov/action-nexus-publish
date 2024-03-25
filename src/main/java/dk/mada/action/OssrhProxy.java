@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.EphemeralCookieHandler;
@@ -36,6 +37,10 @@ public class OssrhProxy {
     private final HttpClient client;
     /** Flag for successful authentication with OSSRH. */
     private boolean isAuthenticated;
+    /** The timeout to use when uploading bundles. */
+    private final Duration uploadTimeout;
+    /** The timeout to use for short calls. */
+    private final Duration shortCallTimeout;
 
     /**
      * Constructs new instance.
@@ -44,6 +49,9 @@ public class OssrhProxy {
      */
     public OssrhProxy(ActionArguments actionArguments) {
         this.actionArguments = actionArguments;
+
+        uploadTimeout = Duration.ofSeconds(90);
+        shortCallTimeout = Duration.ofSeconds(30);
 
         CookieHandler cookieHandler = EphemeralCookieHandler.newAcceptAll();
         client = HttpClient.newBuilder()
@@ -73,6 +81,26 @@ public class OssrhProxy {
     public HttpResponse<String> uploadBundle(Bundle bundle) {
         authenticate();
         return doUpload(bundle.bundleJar());
+    }
+
+    /**
+     * Run action on staging repositories.
+     *
+     * Used to drop and release repositories. The path decides the action.
+     *
+     * @param path    the url path to push to
+     * @param repoIds a list of repositories IDs to include in the payload
+     * @param message a message to include in the payload
+     */
+    public HttpResponse<String> stagingAction(String path, List<String> repoIds) {
+        String idList = repoIds.stream()
+                .map(id -> "\"" + id + "\"")
+                .collect(Collectors.joining(","));
+
+        String json = "{\"data\":{\"stagedRepositoryIds\":[" + idList + "]}}";
+
+        authenticate();
+        return doPost(path, json);
     }
 
     /**
@@ -120,6 +148,31 @@ public class OssrhProxy {
     }
 
     /**
+     * Posts json payload message.
+     *
+     * @param path the path to post to
+     * @param json the json payload to push
+     * @return the http response
+     */
+    private HttpResponse<String> doPost(String path, String json) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(OSSRH_BASE_URL + path))
+                    .timeout(shortCallTimeout)
+                    .headers(USER_AGENT)
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(json))
+                    .build();
+            return client.send(request, BodyHandlers.ofString());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while posting to " + path + " : " + json, e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed while posting to " + path + " : " + json, e);
+        }
+    }
+
+    /**
      * Uploads file to OSSRH using POST multipart/form-data.
      *
      * @see https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
@@ -150,7 +203,7 @@ public class OssrhProxy {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(OSSRH_BASE_URL + "/service/local/staging/bundle_upload"))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(uploadTimeout)
                     .headers(USER_AGENT)
                     .header("Content-Type", "multipart/form-data; boundary=" + boundaryMarker)
                     .POST(body)
