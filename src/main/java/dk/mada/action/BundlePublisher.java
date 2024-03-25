@@ -33,10 +33,16 @@ public class BundlePublisher {
         loopPause = Duration.ofSeconds(15);
     }
 
+    /**
+     * The action to apply on the repositories when they have settled.
+     */
     public enum TargetAction {
+        /** Drop (delete). */
         DROP,
+        /** Leave repositories - you can use the listed URLs for testing. You must drop manually. */
         LEAVE,
-        PROMOTE
+        /** Promote repositories if they all pass validation. Otherwise leave (so you can inspect and drop manually). */
+        PROMOTE_OR_LEAVE
     }
 
     public List<BundleRepositoryState> publish(List<Bundle> bundles, TargetAction action) {
@@ -51,14 +57,21 @@ public class BundlePublisher {
 
         logger.info(() -> "Processed bundles:\n" + makeSummary(finalBundleStates));
 
-        if (action == TargetAction.LEAVE) {
-            logger.info("Leaving repositories");
-            return finalBundleStates;
-        }
-
         List<String> repoIds = finalBundleStates.stream()
                 .map(brs -> brs.assignedId)
                 .toList();
+
+        boolean allSucceeded = finalBundleStates.stream()
+                .allMatch(brs -> brs.status() == Status.VALIDATED);
+
+        if (action == TargetAction.LEAVE
+                || (action == TargetAction.PROMOTE_OR_LEAVE && !allSucceeded)) {
+            logger.info("Leaving repositories");
+            if (!allSucceeded) {
+                logger.warning("NOTICE: not all repositories validated successfully!");
+            }
+            return finalBundleStates;
+        }
 
         if (action == TargetAction.DROP) {
             logger.info("Dropping repositories...");
