@@ -38,7 +38,7 @@ public class BundlePublisherTest {
 
         BundlePublisher sut = TestInstances.bundlePublisher();
 
-        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.DROP);
+        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.KEEP);
 
         assertThat(states)
                 .isEmpty();

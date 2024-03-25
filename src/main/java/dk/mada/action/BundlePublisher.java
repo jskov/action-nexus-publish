@@ -29,7 +29,7 @@ public class BundlePublisher {
 
     public BundlePublisher(OssrhProxy proxy) {
         this.proxy = proxy;
-        initialProcessingPause = Duration.ofSeconds(120);
+        initialProcessingPause = Duration.ofSeconds(60);
         loopPause = Duration.ofSeconds(15);
     }
 
@@ -39,10 +39,10 @@ public class BundlePublisher {
     public enum TargetAction {
         /** Drop (delete). */
         DROP,
-        /** Leave repositories - you can use the listed URLs for testing. You must drop manually. */
-        LEAVE,
-        /** Promote repositories if they all pass validation. Otherwise leave (so you can inspect and drop manually). */
-        PROMOTE_OR_LEAVE
+        /** Keep repositories - you can use the listed URLs for testing. You must drop manually. */
+        KEEP,
+        /** Promote repositories if they all pass validation. Otherwise keep (so you can inspect and drop manually). */
+        PROMOTE_OR_KEEP
     }
 
     public List<BundleRepositoryState> publish(List<Bundle> bundles, TargetAction action) {
@@ -52,7 +52,7 @@ public class BundlePublisher {
 
         logger.info(() -> "Uploaded bundles:\n" + makeSummary(initialBundleStates));
 
-        logger.info("Waiting for repositories to settle...");
+        logger.info(() -> "Waiting for " + bundles.size() + " repositories to settle...");
         List<BundleRepositoryState> finalBundleStates = waitForRepositoriesToSettle(initialBundleStates);
 
         logger.info(() -> "Processed bundles:\n" + makeSummary(finalBundleStates));
@@ -64,9 +64,9 @@ public class BundlePublisher {
         boolean allSucceeded = finalBundleStates.stream()
                 .allMatch(brs -> brs.status() == Status.VALIDATED);
 
-        if (action == TargetAction.LEAVE
-                || (action == TargetAction.PROMOTE_OR_LEAVE && !allSucceeded)) {
-            logger.info("Leaving repositories");
+        if (action == TargetAction.KEEP
+                || (action == TargetAction.PROMOTE_OR_KEEP && !allSucceeded)) {
+            logger.info("Keeping repositories");
             if (!allSucceeded) {
                 logger.warning("NOTICE: not all repositories validated successfully!");
             }
@@ -99,7 +99,9 @@ public class BundlePublisher {
     }
 
     private List<BundleRepositoryState> waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
-        int waitMillis = (int) initialProcessingPause.toMillis() * bundleStates.size();
+        int bundleCount = bundleStates.size();
+        int waitMillis = (int) initialProcessingPause.toMillis() * bundleCount;
+        boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
             sleep(waitMillis);
@@ -109,11 +111,14 @@ public class BundlePublisher {
 
             // Pause period for next loop depending on how
             // many bundles are actively being processed
-            long stillActive = updatedStates.stream()
+            long bundlesInTransition = updatedStates.stream()
                     .filter(rs -> rs.status().isTransitioning())
                     .count();
-            waitMillis = (int) (loopPause.toMillis() * stillActive);
-        } while (updatedStates.stream().anyMatch(rs -> rs.status().isTransitioning()));
+            waitMillis = (int) (loopPause.toMillis() * bundlesInTransition);
+            logger.info(() -> " " + bundlesInTransition + " bundles still processing...");
+
+            keepWaiting = bundlesInTransition > 0;
+        } while (keepWaiting);
 
         return updatedStates;
     }
