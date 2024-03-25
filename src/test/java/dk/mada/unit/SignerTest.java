@@ -11,14 +11,14 @@ import dk.mada.action.GpgSigner;
 import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
-import dk.mada.fixture.ActionArgumentsFixture;
+import dk.mada.fixture.ArgumentsFixture;
 
 /**
  * Signer tests.
  */
 class SignerTest {
     /** The subject under test - the gpg signer */
-    private final GpgSigner sut = new GpgSigner(ActionArgumentsFixture.withGpg());
+    private final GpgSigner sut = new GpgSigner(ArgumentsFixture.gpgCert());
 
     /**
      * Tests that the certificate can be loaded (from test resources) and is ultimately trusted.
