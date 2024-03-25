@@ -37,6 +37,16 @@ inputs:
     required: true
     description: "FIXME OSSRH_TOKEN"
 
+  target_action:
+    description: "The action to take for bundles after upload"
+    required: false
+    default: 'keep'
+    type: choice
+    options:
+      - drop
+      - keep
+      - promote_or_keep
+
 runs:
   using: "composite"
   steps:
@@ -51,7 +61,7 @@ runs:
         classes_dir=$(mktemp -d)
         (cd ${{ github.action_path }}/src/main/java ; javac -d $classes_dir $(find . -name \*.java))
         cp ${{ github.action_path }}/src/main/resources/logging.properties $classes_dir
-        java -cp $classes_dir dk.mada.action.NexusPublisher
+        java -cp $classes_dir dk.mada.action.ActionNexusPublisher
         rm -rf $classes_dir
       env:
         SEARCH_DIR: ${{ inputs.search_directory }}
@@ -61,4 +71,5 @@ runs:
         LOG_LEVEL: ${{ inputs.log_level }}
         OSSRH_USERNAME: ${{ inputs.ossrh_username }}
         OSSRH_TOKEN: ${{ inputs.ossrh_token }}
+        TARGET_ACTION: ${{ inputs.target_action }}
         

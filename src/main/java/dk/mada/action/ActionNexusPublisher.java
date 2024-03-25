@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.LoggerConfig;
 
-class NexusPublisher {
-    private static Logger logger = Logger.getLogger(NexusPublisher.class.getName());
+class ActionNexusPublisher {
+    private static Logger logger = Logger.getLogger(ActionNexusPublisher.class.getName());
 
     private void run() {
         ActionArguments args = ActionArguments.fromEnv();
@@ -16,13 +16,13 @@ class NexusPublisher {
 
         GpgSigner signer = new GpgSigner(args.gpgCertificate());
         BundleCollector bundleBuilder = new BundleCollector(signer);
+        OssrhProxy proxy = new OssrhProxy(args.ossrhCredentials());
+        BundlePublisher bundlePublisher = new BundlePublisher(proxy);
         try {
-            logger.info("Running!");
             signer.loadSigningCertificate();
 
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
-            logger.info("Found bundles:");
-            bundles.forEach(b -> logger.info(" " + b));
+            bundlePublisher.publish(bundles, args.targetAction());
         } catch (Exception e) {
             logger.warning("Publisher failed initialization: " + e.getMessage());
             System.exit(1);
@@ -37,6 +37,6 @@ class NexusPublisher {
      * @param args the arguments from the command line, ignored
      */
     public static void main(String[] args) {
-        new NexusPublisher().run();
+        new ActionNexusPublisher().run();
     }
 }

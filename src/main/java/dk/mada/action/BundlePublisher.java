@@ -11,9 +11,11 @@ import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.XmlExtractor;
 
 /**
- * Publishes bundles and follow their state until stable.
+ * Uploads bundles and follow their state until stable. Then drops/keeps/publishes them.
+ *
+ * TODO: This class can do with some cleanup.
  */
-public class BundlePublisher {
+public final class BundlePublisher {
     private static Logger logger = Logger.getLogger(BundlePublisher.class.getName());
 
     /** The expected prefix in response when creating new repository. */
@@ -27,6 +29,11 @@ public class BundlePublisher {
     /** The timeout to use in each loop after the initial delay. */
     private final Duration loopPause;
 
+    /**
+     * Constructs a new instance.
+     *
+     * @param proxy the proxy to use for OSSRH access
+     */
     public BundlePublisher(OssrhProxy proxy) {
         this.proxy = proxy;
         initialProcessingPause = Duration.ofSeconds(60);
@@ -45,6 +52,15 @@ public class BundlePublisher {
         PROMOTE_OR_KEEP
     }
 
+    /**
+     * Publishes bundles.
+     *
+     * First uploads the bundles and waits for them to settle. Then executes the desired (drop/keep/publish) action.
+     *
+     * @param bundles the bundles to publish
+     * @param action  the action to take when the repositories have settled
+     * @return the last repository states, before the action was executed
+     */
     public List<BundleRepositoryState> publish(List<Bundle> bundles, TargetAction action) {
         List<BundleRepositoryState> initialBundleStates = bundles.stream()
                 .map(this::uploadBundle)
@@ -123,15 +139,6 @@ public class BundlePublisher {
         return updatedStates;
     }
 
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while waiting for repository state change", e);
-        }
-    }
-
     private BundleRepositoryState updateRepoState(BundleRepositoryState currentState) {
         if (!currentState.status.isTransitioning()) {
             return currentState;
@@ -168,15 +175,21 @@ public class BundlePublisher {
         return new RepositoryStateInfo(xe.getInt("notifications"), xe.getBool("transitioning"), body);
     }
 
+    /**
+     * OSSRH repository states.
+     */
     public enum Status {
-        // Terminal states
+        /** The upload failed. Terminal state. */
         FAILED_UPLOAD,
-        FAILED_VALIDATION,
+        /** The bundle was uploaded. Should transition to FAILED_VALIDATION or VALIDATED. */
         UPLOADED,
+        /** The validation failed. Terminal state. */
+        FAILED_VALIDATION,
+        /** The validation succeeded. Terminal state. */
         VALIDATED;
 
         boolean isTransitioning() {
-            return this == UPLOADED || this == VALIDATED;
+            return this == UPLOADED;
         }
     }
 
@@ -185,7 +198,7 @@ public class BundlePublisher {
      *
      * @param bundle          the bundle
      * @param status          the current repository status
-     * @param assignedInd     the assigned repository id
+     * @param assignedId      the assigned repository id
      * @param latestStateInfo the latest returned state information (note, may be from emptyStateInfo())
      */
     public record BundleRepositoryState(Bundle bundle, Status status, String assignedId, RepositoryStateInfo latestStateInfo) {
@@ -213,5 +226,19 @@ public class BundlePublisher {
 
     private RepositoryStateInfo emptyStateInfo(String info) {
         return new RepositoryStateInfo(-1, false, info);
+    }
+
+    /**
+     * Sleep for a bit. Handles interruption (by failing).
+     *
+     * @param millis the number of milliseconds to sleep
+     */
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for repository state change", e);
+        }
     }
 }

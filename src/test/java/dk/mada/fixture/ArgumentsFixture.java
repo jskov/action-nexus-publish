@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import dk.mada.action.ActionArguments;
 import dk.mada.action.ActionArguments.GpgCertificate;
 import dk.mada.action.ActionArguments.OssrhCredentials;
+import dk.mada.action.BundlePublisher.TargetAction;
 import dk.mada.action.util.LoggerConfig;
 
 /**
@@ -26,10 +27,10 @@ public final class ArgumentsFixture {
     public static ActionArguments withGpg() {
         LoggerConfig.loadConfig("/test-logging.properties");
 
-        OssrhCredentials ossrhCreds = readOssrhCreds();
+        OssrhCredentials ossrhCreds = ossrhCreds();
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
-        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds);
+        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds, TargetAction.DROP);
     }
 
     /** {@return GPG test certificate} */
@@ -42,7 +43,7 @@ public final class ArgumentsFixture {
      *
      * @return the loaded OSSRH credentials or dummy credentials
      */
-    private static OssrhCredentials readOssrhCreds() {
+    public static OssrhCredentials ossrhCreds() {
         try {
             String runtimePath = System.getenv("XDG_RUNTIME_DIR");
             if (runtimePath != null) {

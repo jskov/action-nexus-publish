@@ -26,8 +26,11 @@ import dk.mada.fixture.TestInstances;
  */
 public class BundlePublisherTest {
     @TempDir
-    Path workDir;
+    private Path workDir;
 
+    /**
+     * Tests that a pom bundle can be published and dropped (without causing an explosion).
+     */
     @Test
     void canGo() throws IOException {
         String pomName = "action-maven-publish-test-0.0.0.pom";
@@ -38,9 +41,9 @@ public class BundlePublisherTest {
 
         BundlePublisher sut = TestInstances.bundlePublisher();
 
-        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.KEEP);
+        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.DROP);
 
         assertThat(states)
-                .isEmpty();
+                .isNotEmpty();
     }
 }

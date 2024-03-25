@@ -9,7 +9,6 @@ import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
@@ -18,6 +17,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dk.mada.action.ActionArguments.OssrhCredentials;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.util.EphemeralCookieHandler;
 
@@ -31,8 +31,8 @@ public class OssrhProxy {
     private static final String OSSRH_BASE_URL = "https://s01.oss.sonatype.org";
     /** The User Agent used by the proxy calls. */
     private static final String[] USER_AGENT = new String[] { "User-Agent", "jskov_action-maven-publish" };
-    /** The action arguments, containing OSSRH credentials. */
-    private final ActionArguments actionArguments;
+    /** The credentials to use for login to OSSRH. */
+    private final OssrhCredentials credentials;
     /** The http client. */
     private final HttpClient client;
     /** Flag for successful authentication with OSSRH. */
@@ -45,10 +45,10 @@ public class OssrhProxy {
     /**
      * Constructs new instance.
      *
-     * @param actionArguments the action arguments
+     * @param credentials the OSSRH credentials
      */
-    public OssrhProxy(ActionArguments actionArguments) {
-        this.actionArguments = actionArguments;
+    public OssrhProxy(OssrhCredentials credentials) {
+        this.credentials = credentials;
 
         uploadTimeout = Duration.ofSeconds(90);
         shortCallTimeout = Duration.ofSeconds(30);
@@ -90,7 +90,6 @@ public class OssrhProxy {
      *
      * @param path    the url path to push to
      * @param repoIds a list of repositories IDs to include in the payload
-     * @param message a message to include in the payload
      */
     public HttpResponse<String> stagingAction(String path, List<String> repoIds) {
         String idList = repoIds.stream()
@@ -112,7 +111,7 @@ public class OssrhProxy {
         }
 
         HttpResponse<String> response = doGet("/service/local/authentication/login",
-                "Authorization", actionArguments.ossrhCredentials().asBasicAuth());
+                "Authorization", credentials.asBasicAuth());
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             throw new IllegalStateException("Failed authenticating: " + response.body());
         }
@@ -128,7 +127,7 @@ public class OssrhProxy {
      */
     private HttpResponse<String> doGet(String path, String... headers) {
         try {
-            Builder builder = HttpRequest.newBuilder()
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
                     .uri(URI.create(OSSRH_BASE_URL + path))
                     .timeout(Duration.ofSeconds(30))
                     .headers(USER_AGENT);

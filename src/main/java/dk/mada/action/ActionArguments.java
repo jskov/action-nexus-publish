@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
+import dk.mada.action.BundlePublisher.TargetAction;
+
 /**
  * These are the arguments accepted by the action. Arguments are provided via environment variables.
  *
@@ -19,9 +21,10 @@ import java.util.stream.Stream;
  * @param companionSuffixes the companion suffixes to include when finding a POM file
  * @param logLevel          the logging level to use
  * @param ossrhCredentials  the OSSRH credentials
+ * @param targetAction      the action to take after the bundles have been validated
  */
 public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, List<String> companionSuffixes,
-        Level logLevel, OssrhCredentials ossrhCredentials) {
+        Level logLevel, OssrhCredentials ossrhCredentials, TargetAction targetAction) {
 
     /** Argument validation. */
     public ActionArguments {
@@ -29,6 +32,7 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
         Objects.requireNonNull(searchDir, "The search directory must be specified");
         Objects.requireNonNull(companionSuffixes, "The companion suffixes must not be null");
         Objects.requireNonNull(logLevel, "The logging level must not be null");
+        Objects.requireNonNull(targetAction, "The target action must not be null");
 
         if (!Files.isDirectory(searchDir)) {
             throw new IllegalArgumentException("Not a directory: " + searchDir);
@@ -104,7 +108,8 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
                 .toList();
         Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
         Level logLevel = Level.parse(getRequiredEnv("LOG_LEVEL").toUpperCase(Locale.ROOT));
-        return new ActionArguments(gpgCert, searchDir, suffixes, logLevel, ossrhCreds);
+        TargetAction targetAction = TargetAction.valueOf(getRequiredEnv("TARGET_ACTION").toUpperCase(Locale.ROOT));
+        return new ActionArguments(gpgCert, searchDir, suffixes, logLevel, ossrhCreds, targetAction);
     }
 
     /**

@@ -20,7 +20,7 @@ public class XmlExtractor {
     }
 
     /**
-     * @{return the field value as an integer}
+     * {@return the field value as an integer}
      *
      * @param fieldName the field name
      */
@@ -34,7 +34,7 @@ public class XmlExtractor {
     }
 
     /**
-     * @{return the field value as a boolean}
+     * {@return the field value as a boolean}
      *
      * @param fieldName the field name
      */
@@ -43,7 +43,7 @@ public class XmlExtractor {
     }
 
     /**
-     * @{return the field value}
+     * {@return the field value}
      *
      * @param fieldName the field name
      */

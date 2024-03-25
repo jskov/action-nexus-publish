@@ -8,7 +8,7 @@ import dk.mada.action.OssrhProxy;
 /**
  * Provides test instances of the domain classes.
  */
-public class TestInstances {
+public final class TestInstances {
     private TestInstances() {
     }
 
@@ -41,7 +41,7 @@ public class TestInstances {
     /** {@return an initialized ossrh proxy instance} */
     public static OssrhProxy ossrhProxy() {
         if (ossrhProxy == null) {
-            ossrhProxy = new OssrhProxy(ArgumentsFixture.withGpg());
+            ossrhProxy = new OssrhProxy(ArgumentsFixture.ossrhCreds());
         }
         return ossrhProxy;
     }
