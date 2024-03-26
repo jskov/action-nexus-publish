@@ -4,7 +4,7 @@ package dk.mada.action.util;
  * Crude XML-field extractor.
  *
  * There is so much configuration to be done when using a full XML parser. So shoot me for cheating. This only works
- * because the input is known to be regular.
+ * because the input is known (assumed!) to be regular.
  */
 public class XmlExtractor {
     /** The XML document. */
@@ -13,7 +13,7 @@ public class XmlExtractor {
     /**
      * Constructs a new instance.
      *
-     * @param xml the XML document
+     * @param xml the XML text
      */
     public XmlExtractor(String xml) {
         this.xml = xml;

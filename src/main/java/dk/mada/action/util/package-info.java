@@ -1,6 +1,6 @@
 /**
  * Action utilities.
  *
- * Classes in this package are not directly related to the action domain.
+ * Useful for other actions in the future. Not specific to a single implementation.
  */
 package dk.mada.action.util;

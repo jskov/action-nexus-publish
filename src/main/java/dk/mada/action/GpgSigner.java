@@ -17,7 +17,12 @@ import dk.mada.action.util.ExternalCmdRunner;
 import dk.mada.action.util.ExternalCmdRunner.CmdInput;
 import dk.mada.action.util.ExternalCmdRunner.CmdResult;
 
-public final class GpgSigner {
+/**
+ * Signs files using external GPG application.
+ *
+ * Creates a new temporary GNUPG_HOME directory and imports the certificate.
+ */
+public final class GpgSigner implements AutoCloseable {
     private static Logger logger = Logger.getLogger(GpgSigner.class.getName());
     /** The GPG command timeout in seconds. */
     private static final int GPG_DEFAULT_TIMEOUT_SECONDS = 5;
@@ -53,7 +58,8 @@ public final class GpgSigner {
     /**
      * Cleanup working directory.
      */
-    public void cleanup() {
+    @Override
+    public void close() {
         DirectoryDeleter.deleteDir(gnupghomeDir);
     }
 
@@ -148,7 +154,7 @@ public final class GpgSigner {
      */
     enum GpgDetailType {
         /** The certificate fingerprint. */
-        FINGERPRINT("fpr");
+        FINGERPRINT("fpr:");
 
         /** The column prefix used for this detail. */
         private final String prefix;
@@ -166,7 +172,7 @@ public final class GpgSigner {
         public String extractFrom(String output) {
             return output.lines()
                     .filter(l -> l.startsWith(prefix))
-                    .map(l -> l.substring(prefix.length() + 1))
+                    .map(l -> l.substring(prefix.length()))
                     .findFirst()
                     .orElseThrow();
         }

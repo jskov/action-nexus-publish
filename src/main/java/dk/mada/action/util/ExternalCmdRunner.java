@@ -60,18 +60,18 @@ public final class ExternalCmdRunner {
             }
             logger.fine(() -> "Run in " + input.execDir() + "\ncommand: " + input.command());
 
-            String stdin = input.stdin();
-            Map<String, String> env = input.env();
-
             ProcessBuilder pb = new ProcessBuilder()
                     .command(input.command())
                     .redirectErrorStream(true)
                     .directory(execDir.toFile());
+
+            Map<String, String> env = input.env();
             if (env != null) {
                 pb.environment().putAll(env);
             }
             Process p = pb.start();
 
+            String stdin = input.stdin();
             if (stdin != null) {
                 // Important to make sure the output is closed after writing
                 // or the command may hang waiting for more.

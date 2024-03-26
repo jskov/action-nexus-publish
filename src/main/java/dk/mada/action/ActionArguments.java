@@ -41,7 +41,9 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
 
     @Override
     public String toString() {
-        return "ActionArguments [searchDir=" + searchDir + ", companionSuffixes=" + companionSuffixes + ", logLevel=" + logLevel + "]";
+        // Note: no secrets
+        return "ActionArguments [searchDir=" + searchDir + ", companionSuffixes=" + companionSuffixes + ", logLevel=" + logLevel
+                + ", targetAction=" + targetAction + "]";
     }
 
     /**
@@ -60,12 +62,13 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
             Objects.requireNonNull(secret, "The private GPG secret must be specified");
 
             if (!key.contains(BEGIN_PGP_PRIVATE_KEY_BLOCK)) {
-                throw new IllegalArgumentException("Provided GPG key does not contain private header: " + BEGIN_PGP_PRIVATE_KEY_BLOCK);
+                throw new IllegalArgumentException("Provided GPG key does not contain GPG private header: " + BEGIN_PGP_PRIVATE_KEY_BLOCK);
             }
         }
 
         @Override
         public final String toString() {
+            // Note: no secrets
             return "GpgCertificate[key=***, secret=***]";
         }
     }
@@ -90,6 +93,7 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
 
         @Override
         public final String toString() {
+            // Note: no secrets
             return "OssrhCredentials[user=***, token=***]";
         }
     }
@@ -120,7 +124,8 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
     private static String getRequiredEnv(String envName) {
         String value = System.getenv(envName);
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Needs environment variable '" + envName + "' to be defined and non-blank. See readme!");
+            throw new IllegalArgumentException(
+                    "Needs environment variable '" + envName + "' to be defined and non-blank. See readme/action.yaml!");
         }
         return value;
     }

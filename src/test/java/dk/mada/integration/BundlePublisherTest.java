@@ -27,6 +27,7 @@ import dk.mada.fixture.TestInstances;
  */
 @EnabledIfEnvironmentVariable(named = "USERNAME", matches = "jskov", disabledReason = "Only runs locally")
 public class BundlePublisherTest {
+    /** Temporary directory to use for the test data. */
     @TempDir
     private Path workDir;
 

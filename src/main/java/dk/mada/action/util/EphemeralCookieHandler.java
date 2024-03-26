@@ -38,7 +38,7 @@ public final class EphemeralCookieHandler {
 
         @Override
         public void add(URI uri, HttpCookie cookie) {
-            logger.fine(() -> "cookie: add url:" + uri + ", name:" + cookie.getName());
+            logger.finest(() -> "cookie: add url:" + uri + ", name:" + cookie.getName());
             cookies.computeIfAbsent(uri.getHost(), k -> new HashSet<>())
                     .add(cookie);
             cookieOrigins.put(cookie, uri);
@@ -47,7 +47,7 @@ public final class EphemeralCookieHandler {
         // TODO: need to also filter by HttpCookie:domainMatches
         @Override
         public List<HttpCookie> get(URI uri) {
-            logger.fine(() -> "cookie get: " + uri);
+            logger.finest(() -> "cookie get: " + uri);
             return cookies.computeIfAbsent(uri.getHost(), k -> new HashSet<>()).stream()
                     .filter(cookie -> !cookie.hasExpired())
                     .toList();
@@ -55,7 +55,7 @@ public final class EphemeralCookieHandler {
 
         @Override
         public List<HttpCookie> getCookies() {
-            logger.fine("cookie: get all");
+            logger.finest("cookie: get all");
             return cookies.values().stream()
                     .flatMap(Set::stream)
                     .toList();
@@ -63,20 +63,20 @@ public final class EphemeralCookieHandler {
 
         @Override
         public List<URI> getURIs() {
-            logger.fine("cookie: get uris");
+            logger.finest("cookie: get uris");
             return List.copyOf(cookieOrigins.values());
         }
 
         // TODO
         @Override
         public boolean remove(URI uri, HttpCookie cookie) {
-            logger.fine(() -> "cookie: remove uri:" + uri + ", name:" + cookie.getName());
+            logger.finest(() -> "cookie: remove uri:" + uri + ", name:" + cookie.getName());
             return false;
         }
 
         @Override
         public boolean removeAll() {
-            logger.fine("cookie: clear all");
+            logger.finest("cookie: clear all");
             return false;
         }
     }
