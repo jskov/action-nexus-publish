@@ -25,6 +25,8 @@ import dk.mada.action.util.EphemeralCookieHandler;
  * A proxy for OSSRH web service.
  *
  * The first call will cause authentication which will provide a cookie token used for following calls.
+ *
+ * Note: this will have to change when the new Central Portal publishing goes live.
  */
 public class OssrhProxy {
     /** The base URL for OSSRH. */

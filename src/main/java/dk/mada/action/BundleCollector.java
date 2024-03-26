@@ -12,7 +12,7 @@ import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 
 /**
- * Collects bundles from disk for later signing/publishing.
+ * Collects POMs and companion assets from disk, packs them into signed bundles.
  */
 public final class BundleCollector {
     /** The GPG signer. */

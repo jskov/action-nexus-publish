@@ -1,41 +1,32 @@
 name: "action-maven-publish"
 author: "Jesper Skov (jskov@mada.dk)"
-description: "Publish maven artifacts to Nexus"
+description: "Publish maven artifacts to OSSRH (MavenCentral)"
 
 inputs:
-  log_level:
-    description: 'Log level (for JUL framework)'
-    required: false
-    default: 'info'
-    type: choice
-    options:
-      - info
-      - finest
-
   search_directory:
     required: true
-    description: "FIXME search dir"
+    description: "The directory to search for POM files"
 
   companion_suffixes:
     required: false
-    description: "FIXME companion suffixes"
+    description: "The companion files to include with found POM files"
     default: ".jar, .module, -javadoc.jar, -sources.jar"
 
   signing_key:
     required: true
-    description: "FIXME signing key"
+    description: "The private GPG signing key"
 
   signing_key_secret:
     required: true
-    description: "FIXME secret"
+    description: "The secret for the GPG signing key"
 
   ossrh_username:
     required: true
-    description: "FIXME OSSRH_USERNAME"
+    description: "The OSSRH login name"
 
   ossrh_token:
     required: true
-    description: "FIXME OSSRH_TOKEN"
+    description: "The OSSRH token"
 
   target_action:
     description: "The action to take for bundles after upload"
@@ -46,6 +37,16 @@ inputs:
       - drop
       - keep
       - promote_or_keep
+
+  log_level:
+    description: 'Log level (for JUL framework)'
+    required: false
+    default: 'info'
+    type: choice
+    options:
+      - info
+      - fine
+      - finest
 
 runs:
   using: "composite"
@@ -72,4 +73,3 @@ runs:
         OSSRH_USERNAME: ${{ inputs.ossrh_username }}
         OSSRH_TOKEN: ${{ inputs.ossrh_token }}
         TARGET_ACTION: ${{ inputs.target_action }}
-        
