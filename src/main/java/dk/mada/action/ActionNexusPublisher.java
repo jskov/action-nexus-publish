@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import dk.mada.action.BundleCollector.Bundle;
+import dk.mada.action.BundlePublisher.PublishingResult;
 import dk.mada.action.util.LoggerConfig;
 
 /**
@@ -20,7 +21,7 @@ public final class ActionNexusPublisher {
         LoggerConfig.loadDefaultConfig(args.logLevel());
         logger.config(() -> args.toString());
 
-        boolean failed = false;
+        boolean failed;
         try (GpgSigner signer = new GpgSigner(args.gpgCertificate())) {
             BundleCollector bundleBuilder = new BundleCollector(signer);
             OssrhProxy proxy = new OssrhProxy(args.ossrhCredentials());
@@ -28,7 +29,10 @@ public final class ActionNexusPublisher {
             signer.loadSigningCertificate();
 
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());
-            bundlePublisher.publish(bundles, args.targetAction());
+            PublishingResult result = bundlePublisher.publish(bundles, args.targetAction());
+
+            // If all repositories were valid, this was a success. Regardless of the requested action.
+            failed = !result.allReposValid();
         } catch (Exception e) {
             logger.warning("Publisher failed initialization: " + e.getMessage());
             failed = true;

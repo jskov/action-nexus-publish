@@ -59,9 +59,9 @@ public final class BundlePublisher {
      *
      * @param bundles the bundles to publish
      * @param action  the action to take when the repositories have settled
-     * @return the last repository states, before the action was executed
+     * @return the publishing result
      */
-    public List<BundleRepositoryState> publish(List<Bundle> bundles, TargetAction action) {
+    public PublishingResult publish(List<Bundle> bundles, TargetAction action) {
         List<BundleRepositoryState> initialBundleStates = bundles.stream()
                 .map(this::uploadBundle)
                 .toList();
@@ -80,29 +80,52 @@ public final class BundlePublisher {
         boolean allSucceeded = finalBundleStates.stream()
                 .allMatch(brs -> brs.status() == Status.VALIDATED);
 
+        ExecutedAction executedAction;
         if (action == TargetAction.KEEP
                 || (action == TargetAction.PROMOTE_OR_KEEP && !allSucceeded)) {
             logger.info("Keeping repositories");
             if (!allSucceeded) {
                 logger.warning("NOTICE: not all repositories validated successfully!");
             }
-            return finalBundleStates;
-        }
-
-        if (action == TargetAction.DROP) {
+            executedAction = ExecutedAction.KEPT;
+        } else if (action == TargetAction.DROP) {
             logger.info("Dropping repositories...");
             proxy.stagingAction("/service/local/staging/bulk/drop", repoIds);
+            executedAction = ExecutedAction.DROPPED;
         } else {
             logger.info("Publishing repositories...");
             logger.warning("TODO: promote");
             // https://s01.oss.sonatype.org/service/local/staging/bulk/promote
+            executedAction = ExecutedAction.PROMOTED;
         }
 
         logger.info("Done");
-        return finalBundleStates;
+        return new PublishingResult(executedAction, allSucceeded, finalBundleStates);
     }
-    // FIXME: include maven repo paths (repositoryURI from status)
 
+    /**
+     * The repository action actually executed.
+     */
+    public enum ExecutedAction {
+        /** The repositories were dropped. */
+        DROPPED,
+        /** The repositories were kept. */
+        KEPT,
+        /** The repositories were promoted. */
+        PROMOTED
+    }
+
+    /**
+     * The result of publishing.
+     *
+     * @param executedAction the action executed on the repositories
+     * @param allReposValid  true if all repositories were valid
+     * @param finalStates    the final states for the individual repositories
+     */
+    public record PublishingResult(ExecutedAction executedAction, boolean allReposValid, List<BundleRepositoryState> finalStates) {
+    }
+
+    // FIXME: include maven repo paths (repositoryURI from status)
     private String makeSummary(List<BundleRepositoryState> initialBundleStates) {
         return " " + initialBundleStates.stream()
                 .map(bs -> bs.bundle().bundleJar().getFileName() + " repo:" + bs.assignedId() + ", status: " + bs.status)
@@ -120,7 +143,7 @@ public final class BundlePublisher {
         boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
-            int waitingSeconds = (int)waitMillis/1000;
+            int waitingSeconds = (int) waitMillis / 1000;
             logger.info(() -> " waiting " + waitingSeconds + " seconds for MavenCentral processing...");
             sleep(waitMillis);
             updatedStates = updatedStates.stream()
