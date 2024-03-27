@@ -120,6 +120,8 @@ public final class BundlePublisher {
         boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
+            int waitingSeconds = (int)waitMillis/1000;
+            logger.info(() -> " waiting " + waitingSeconds + " seconds for MavenCentral processing...");
             sleep(waitMillis);
             updatedStates = updatedStates.stream()
                     .map(this::updateRepoState)
@@ -131,7 +133,7 @@ public final class BundlePublisher {
                     .filter(rs -> rs.status().isTransitioning())
                     .count();
             waitMillis = (int) (loopPause.toMillis() * bundlesInTransition);
-            logger.info(() -> " " + bundlesInTransition + " bundles still processing...");
+            logger.info(() -> " (" + bundlesInTransition + " bundles still processing)");
 
             keepWaiting = bundlesInTransition > 0;
         } while (keepWaiting);
