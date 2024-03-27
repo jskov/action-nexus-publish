@@ -68,6 +68,7 @@ So if you cannot trust your secrets to Gradle or Maven (and whatever dependencie
 Well, you should not!
 
 You would do well to fork this repository and review the code. And then use the action from your forked repository!
+Basically the [official](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) recommendations but with extra paranoia :)
 
 According to [SonarCloud](https://sonarcloud.io/project/information?id=jskov_action-maven-publish) there are ~800 lines of java code.
 
@@ -138,6 +139,7 @@ Then the bundle jar-files are uploaded to OSSRH using `ossrh_username`/`ossrh_to
 
 Finally, all the uploaded bundles are dropped/kept/promoted according to `target_action`.
 Note that if any of the bundles fail validation, 'promote' will fall back to 'keep' (hence 'promote_or_keep').
+
 
 
 <!-- action-docs-runs -->
