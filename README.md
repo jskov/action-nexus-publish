@@ -64,7 +64,7 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 * Why did you not write this Action in javascript - it is more conventional for Actions?  
  I do not have enough experience with the plain javascript language to do that (efficiently, anyway).  
  And including 27 NPMs to solve the problem would defeat the purpose of this Action.  
-
+   
  The target audience of this Action consists of java programmers; they should be able to easily review the code.
 
 * Why did you not write this Action in shell script - it is more conventional for Actions?  
