@@ -69,8 +69,8 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
 * *Why did you not write this Action in shell script - it is more conventional for Actions?*  
   Same as above, really.  
-  But I do believe it could be done much simpler in shell script by someone with enough experience there.  
-  And while shell script is a more simple and common language (than javascript/java), I believe there are still a lot
+  I do believe it could be done much simpler in shell script by someone with enough experience there.  
+  But while shell script is a more simple and common "language" (than javascript/java), I believe there are still a lot
   of java developers that would prefer to review java code.
 
 * *Can my dependencies in Maven/Gradle really read my secrets?*  
@@ -95,7 +95,7 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   Yeah, I trust the JDK. And Temurin's build of it. And the `actions/setup-java` action, GitHub in general, and the Ubuntu runner they provide.  
   Or I would have stayed in my cave.
 
-  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies including when developing an average application.
+  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.
 
 
 ## Using the Action
