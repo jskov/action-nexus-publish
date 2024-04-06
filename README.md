@@ -69,8 +69,9 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
 * Why did you not write this Action in shell script - it is more conventional for Actions?  
   Same as above, really.  
-  But I do believe it could be done much simpler in shell script by someone with enough experience there.
-  Not sure if it would be easy for java developers to review, though.
+  But I do believe it could be done much simpler in shell script by someone with enough experience there.  
+  And while shell script is a more simple and common language (than javascript/java), I believe there are still a lot
+  of java developers that would prefer to review java code.
 
 * Can my dependencies in Maven/Gradle really read my secrets?  
   Sure, any class that is loaded/instantiated can do anything with the environment provided.  
