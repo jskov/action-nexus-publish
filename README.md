@@ -79,11 +79,11 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   Can you be sure what classes are loaded during a Maven/Gradle invocation?  
   You may trust the two projects behind Maven and Gradle, but do you trust all the dependencies they use during a run?  
   
-  As a mitigation, you can publish with Maven/Gradle in a separate step that only invokes the publishing tasks.
-  That is, only giving your secrets to this step, not the step building/testing your code.  
+  As a mitigation, you can publish with Maven/Gradle in a separate step that only invokes the publishing tasks.  
+  That is, only giving your secrets to this step, not the step(s) building/testing your code.  
 
-  This way you can at least exclude risk from all your project's (transitive) build and test dependencies, plus those
-  from not-activated Maven/Gradle plugins.
+  This way you can exclude risk from all your project's (transitive) build and test dependencies, plus those
+  from Maven/Gradle plugins that are not activated by publishing (if any?).
   
 
 * Are you really this paranoid?  
