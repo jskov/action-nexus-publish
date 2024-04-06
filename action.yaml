@@ -9,7 +9,7 @@ inputs:
 
   companion_suffixes:
     required: false
-    description: "The companion files to include with found POM files"
+    description: "The companion files to include with found POM files, comma-separated"
     default: ".jar, .module, -javadoc.jar, -sources.jar"
 
   signing_key:

@@ -76,7 +76,7 @@ Publishing Maven artifacts to Maven Central.
 | parameter | description | required | default |
 | --- | --- | --- | --- |
 | search_directory   | The directory to search for POM files | `true` | |
-| companion_suffixes | The companion files to include with found POM files | `false` | ".jar, .module, -javadoc.jar, -sources.jar" |
+| companion_suffixes | The companion files to include with found POM files, comma-separated | `false` | ".jar, .module, -javadoc.jar, -sources.jar" |
 | signing_key        | GPG private signing key | `true` | |
 | signing_key_secret | GPG signing key secret | `true` | |
 | ossrh_username     | The OSSRH login name | `true` | |
@@ -110,6 +110,6 @@ Then the bundle jar-files are uploaded to OSSRH using `ossrh_username`/`ossrh_to
 Finally, all the uploaded bundles are dropped/kept/promoted according to `target_action`.
 Note that if any of the bundles fail validation, 'promote' will fall back to 'keep' (hence 'promote_or_keep').
 
-
+See [OSSRH instructions](https://central.sonatype.org/register/central-portal/) for how to prepare the necessary [GPG](https://central.sonatype.org/publish/requirements/gpg/) and [Token](https://central.sonatype.org/publish/generate-token/) arguments.
 
 <!-- action-docs-runs -->
