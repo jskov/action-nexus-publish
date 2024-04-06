@@ -95,7 +95,7 @@ Publishing Maven artifacts to Maven Central.
 
 ### Runs
 
-This is a [composite](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) Action.
+This is a [composite](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) Action, automating the instructions of [OSSRH manual publishing](https://central.sonatype.org/publish/publish-manual/).
 
 The java code in ['src/main/java'](./src/main/java) is compiled and started.
 
