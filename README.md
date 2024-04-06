@@ -1,7 +1,7 @@
 # action-maven-publish
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jskov_action-maven-publish&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jskov_action-maven-publish)
 
-This action will sign Maven artifacts and publish them to MavenCentral.
+This action will sign your Maven artifacts and [publish them to MavenCentral](https://central.sonatype.org/publish/publish-manual/).
 
 **IT IS NOT READY YET**
 
@@ -56,12 +56,8 @@ The repository contains both `gradlew` and a build file with dependencies to jun
 
 These are **only** used for development. They are not used in the execution of the action.
 
-There are 'unit' tests which can be executed without context. 
-And there is a single 'integration' test which uploads a bundle to OSSRH (this needs credentials, so can only be run manually).
-
-## Preparing GPG key
-
-See [Sonatype's instructions](https://central.sonatype.org/publish/requirements/gpg/).
+There are unit-tests which can be executed without context. 
+And there is a single integration-test which uploads a bundle to OSSRH (this needs credentials, so can only be run manually by someone providing said credentials).
 
 ## Using the Action
 
