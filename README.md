@@ -95,7 +95,7 @@ Publishing Maven artifacts to Maven Central.
 
 ### Runs
 
-This is a `composite` Action.
+This is a [`composite`](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) Action.
 
 The java code in ['src/main/java'](./src/main/java) is compiled and started.
 
