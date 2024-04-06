@@ -15,7 +15,8 @@ import org.junit.jupiter.api.io.TempDir;
 import dk.mada.action.BundleCollector;
 import dk.mada.action.BundleCollector.Bundle;
 import dk.mada.action.BundlePublisher;
-import dk.mada.action.BundlePublisher.BundleRepositoryState;
+import dk.mada.action.BundlePublisher.ExecutedAction;
+import dk.mada.action.BundlePublisher.PublishingResult;
 import dk.mada.action.BundlePublisher.TargetAction;
 import dk.mada.fixture.TestInstances;
 
@@ -44,9 +45,13 @@ public class BundlePublisherTest {
 
         BundlePublisher sut = TestInstances.bundlePublisher();
 
-        List<BundleRepositoryState> states = sut.publish(bundles, TargetAction.DROP);
+        PublishingResult result = sut.publish(bundles, TargetAction.DROP);
 
-        assertThat(states)
+        assertThat(result.finalStates())
                 .isNotEmpty();
+        assertThat(result.allReposValid())
+                .isFalse();
+        assertThat(result.executedAction())
+                .isEqualTo(ExecutedAction.DROPPED);
     }
 }
