@@ -61,19 +61,19 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
 ### FAQish
 
-* Why did you not write this Action in javascript - it is more conventional for Actions?  
+* *Why did you not write this Action in javascript - it is more conventional for Actions?*  
   I do not have enough experience with the plain javascript language to do that (efficiently, anyway).  
   And including 27 NPMs to solve the problem would defeat the purpose of this Action.  
 
   The target audience of this Action consists of java programmers; they should be able to easily review the code.
 
-* Why did you not write this Action in shell script - it is more conventional for Actions?  
+* *Why did you not write this Action in shell script - it is more conventional for Actions?*  
   Same as above, really.  
   But I do believe it could be done much simpler in shell script by someone with enough experience there.  
   And while shell script is a more simple and common language (than javascript/java), I believe there are still a lot
   of java developers that would prefer to review java code.
 
-* Can my dependencies in Maven/Gradle really read my secrets?  
+* *Can my dependencies in Maven/Gradle really read my secrets?*  
   Sure, any class that is loaded/instantiated can do anything with the environment provided.  
 
   Can you be sure what classes are loaded during a Maven/Gradle invocation?  
@@ -86,7 +86,7 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   from Maven/Gradle plugins that are not activated by publishing (if any?).
   
 
-* Are you really this paranoid?  
+* *Are you really this paranoid?*  
   When it suits me.
 
 
