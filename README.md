@@ -61,18 +61,20 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
 ### FAQish
 
-* Why did you now write this Action in javascript - it is more conventional for Actions  
+* Why did you now write this Action in javascript - it is more conventional for Actions?  
 Several reasons:  
- ** I do not have enough experience with the plain javascript language to do that (efficiently, anyway).  
- And including 27 NPMs to solve the problem would defeat the purpose of this Action.
- ** The target audience of this Action consists of java programmers; they should be able to easily review the code.
 
-* Why did you now write this Action in shell script - it is more conventional for Actions
- Same as above, really. But I do believe it could be done much simpler in shell scripts by someone with enough experience there.
+ - I do not have enough experience with the plain javascript language to do that (efficiently, anyway).  
+ And including 27 NPMs to solve the problem would defeat the purpose of this Action.  
+ - The target audience of this Action consists of java programmers; they should be able to easily review the code.
+
+* Why did you now write this Action in shell script - it is more conventional for Actions?  
+ Same as above, really.  
+ But I do believe it could be done much simpler in shell scripts by someone with enough experience there.
 
 * Can my dependencies in Maven/Gradle really read my secrets?
 
-Sure, any class that is loaded/instantiated can do anything.  
+Sure, any class that is loaded/instantiated can do anything with the environment provided.  
 
 Can you be sure what classes are loaded during a Maven/Gradle invocation?  
 You may trust the two projects behind Maven and Gradle, but do you trust all the dependencies they use during a run?
@@ -80,8 +82,7 @@ You may trust the two projects behind Maven and Gradle, but do you trust all the
 As a mitigation, you can publish with Maven/Gradle in a separate step that does not build/test anything.  
 This way you can at least exclude risk from all your project's (transitive) build and test dependencies.
 
-* Are you really this paranoid?
-
+* Are you really this paranoid?  
 When it suits me.
 
 
