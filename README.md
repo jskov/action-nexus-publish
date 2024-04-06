@@ -1,33 +1,33 @@
 # action-maven-publish
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jskov_action-maven-publish&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jskov_action-maven-publish)
 
-This action will [sign and publish](https://central.sonatype.org/publish/publish-manual/) your Maven artifacts to [MavenCentral](https://central.sonatype.org/).
+This Action will [sign and publish](https://central.sonatype.org/publish/publish-manual/) your Maven artifacts to [MavenCentral](https://central.sonatype.org/).
 
 **IT IS NOT READY YET**
 
 ## Simple(r) and Transparent
 
-The action does the same as the publishing plugins of Gradle and Maven (or near enough).
+The Action does the same as the publishing plugins of Gradle and Maven (or near enough).
 But it does so in less than 1kLOC self-contained java that any (java) programmer should be able to verify the logic of.
 
 When using a plugin in Gradle or Maven, all other plugins (and potentially any dependency jar used for compilation/testing) will have access to your GPG signing key and your credentials for MavenCentral.
 
 Depending on your level of paranoia this may be OK. Or it could be a problem.
 
-For me it is a problem, hence this action.
+For me it is a problem, hence this Action.
 
 ### Runtime
 
-The action runtime is built just using `javac` without any dependencies (just the classes in ['src/main/java'](./src/main/java)).
-This is done as the action is run - see [action.yaml](./action.yaml).
+The Action runtime is built just using `javac` without any dependencies (just the classes in ['src/main/java'](./src/main/java)).
+This is done as the Action is run - see [action.yaml](./action.yaml).
 
-There are no binaries or third party dependencies used for running this action. Just the Java SE library.
+There are no binaries or third party dependencies used for running this Action. Just the Java SE library.
 
 ### Releases / Tags
 
 I will be tagging this repository to have named base lines and to make it simpler to make release notes.
 
-You should however **not** use a tag name (or worse, a branch name) when referencing this action.
+You should however **not** use a tag name (or worse, a branch name) when referencing this Action.
 Otherwise you run the theoretical risk of the tag being moved in bad faith (or worse - and more likely - suffer bugs in new commits due to my incompetence).
 
 You *should* be using the Git hash from a release (see `Code Review` section below).
@@ -37,11 +37,11 @@ And at least one more when SonaType takes the new Publishing API out of early ac
 
 ### Code Review
 
-So if you cannot trust your secrets to Gradle or Maven (and whatever dependencies you drag into your build), why should you trust this action?
+So if you cannot trust your secrets to Gradle or Maven (and whatever dependencies you drag into your build), why should you trust this Action?
 
 Well, you should not!
 
-You would do well to fork this repository and review the code. And then use the action from your forked repository!
+You would do well to fork this repository and review the code. And then use the Action from your forked repository!
 Basically the [official](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) recommendations but with extra paranoia :)
 
 According to [SonarCloud](https://sonarcloud.io/project/information?id=jskov_action-maven-publish) there are ~800 lines of java code.
@@ -54,7 +54,7 @@ Also remember to have look at [action.yaml](./action.yaml) to verify that only t
 
 The repository contains both `gradlew` and a build file with dependencies to junit and assertj.
 
-These are **only** used for development. They are not used in the execution of the action.
+These are **only** used for development. They are not used in the execution of the Action.
 
 There are unit-tests which can be executed without context. 
 And there is a single integration-test which uploads a bundle to OSSRH (this needs credentials, so can only be run manually by someone providing said credentials).
@@ -95,7 +95,7 @@ Publishing Maven artifacts to Maven Central.
 
 ### Runs
 
-This action is a `composite` action.
+This is a `composite` Action.
 
 The java code in ['src/main/java'](./src/main/java) is compiled and started.
 
