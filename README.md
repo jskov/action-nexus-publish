@@ -92,7 +92,7 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 * *So you trust the JDK? GitHub?*  
   Well, your paranoia has to rest on a bedrock of *something*. Otherwise you will drown :)  
 
-  Yeah, I trust the JDK. And Temurin's build of it. And the `actions/setup-java` action, and GitHub in general (in particular, the Debian VM they provide).  
+  Yeah, I trust the JDK. And Temurin's build of it. And the `actions/setup-java` action, GitHub in general, and the Ubuntu runner they provide.  
   Or I would have stayed in my cave.
 
   But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies including when developing an average application.
