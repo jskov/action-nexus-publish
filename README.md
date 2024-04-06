@@ -25,45 +25,19 @@ There are no binaries or third party dependencies used for running this action. 
 
 ### Releases / Tags
 
-I will be tagging this repository, mostly to have named base lines and to make it simpler to make release notes.
+I will be tagging this repository to have named base lines and to make it simpler to make release notes.
 
 You should however **not** use a tag name (or worse, a branch name) when referencing this action.
-Otherwise you run the risk of the tag being moved in bad faith (or worse - and more likely - suffer bugs in new commits due to my incompetence).
+Otherwise you run the theoretical risk of the tag being moved in bad faith (or worse - and more likely - suffer bugs in new commits due to my incompetence).
 
-You *should* be using the Git hash from a release (see Code Review below).
+You *should* be using the Git hash from a release (see `Code Review` section below).
 
-I do not foresee many releases. Maybe expose extra settings for configuration.
+I do not foresee many releases. Maybe expose some extra settings for configuration.
 And at least one more when SonaType takes the new Publishing API out of early access.
 
 ### Code Review
 
 So if you cannot trust your secrets to Gradle or Maven (and whatever dependencies you drag into your build), why should you trust this action?
-
-Well, you should not!
-
-You would do well to fork this repository and review the code. And then use the action from your forked repository!
-
-According to [SonarCloud](https://sonarcloud.io/project/information?id=jskov_action-maven-publish) there are ~800 lines of java code.
-
-If you have written enough code to publish anything on MavenCentral, it should be a piece of cake to review.
-
-Also remember to have look at [action.yaml](./action.yaml) to verify that only the ['src/main/java'](./src/main/java) classes are used.
-
-### Releases / Tags
-
-I will be tagging this repository, mostly to have named base lines and to make it simpler to make release notes.
-
-You should however **not** use a tag name (or worse, a branch name) when referencing this action.
-Otherwise you run the theoretical risk of the tag being moved in bad faith (or worse - and more likely - suffer bugs in new commits due to my incompetence).
-
-You *should* be using the Git hash from a release (see `Code Review` below).
-
-I do not foresee many releases. Maybe expose some settings for configuration.
-And at least one more when SonaType takes the new Publishing API out of early access.
-
-### Code Review
-
-So if you cannot trust your secrets to Gradle or Maven (and whatever dependencies you drag into your project), why should you trust this action?
 
 Well, you should not!
 
@@ -127,7 +101,7 @@ Publishing Maven artifacts to Maven Central.
 
 This action is a `composite` action.
 
-The java code in `src/main/java` is compiled and started.
+The java code in ['src/main/java'](./src/main/java) is compiled and started.
 
 The `search_directory` is searched for '*.pom' files.
 
