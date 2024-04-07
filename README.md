@@ -103,7 +103,8 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   Yeah, I trust the JDK. And the Temurin build of it. And the `actions/setup-java` action, GitHub in general, and the Ubuntu runner they provide.  
   Or I would have stayed in my cave.
 
-  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.
+  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.  
+  In particular if you do not have full control how dependencies are added or changed over time.
 
 
 ## Using the Action
