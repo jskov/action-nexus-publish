@@ -142,7 +142,7 @@ public final class BundlePublisher {
         boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
-            int waitingSeconds = (int) waitMillis / 1000;
+            int waitingSeconds = waitMillis / 1000;
             logger.info(() -> " waiting " + waitingSeconds + " seconds for MavenCentral processing...");
             sleep(waitMillis);
             updatedStates = updatedStates.stream()
@@ -188,7 +188,6 @@ public final class BundlePublisher {
     private record RepositoryStateInfo(int notifications, boolean transitioning, String info) {
     }
 
-    // TODO: get status update time
     private RepositoryStateInfo parseRepositoryState(HttpResponse<String> response) {
         int status = response.statusCode();
         String body = response.body();
