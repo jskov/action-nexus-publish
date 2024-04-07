@@ -44,11 +44,10 @@ Well, you should not!
 You would do well to fork this repository and review the code. And then use the Action from your forked repository!
 Basically the [official](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) recommendations but with extra paranoia :)
 
-According to [SonarCloud](https://sonarcloud.io/project/information?id=jskov_action-maven-publish) there are ~800 lines of java code.
+According to [SonarCloud](https://sonarcloud.io/project/overview?id=jskov_action-maven-publish) there are <900 lines of java code.
 
 If you have written enough code to publish anything on MavenCentral, it should be a piece of cake to review.
 
-Also remember to have look at [action.yaml](./action.yaml) to verify that only the ['src/main/java'](./src/main/java) classes are used.
 
 ### Testing
 
@@ -84,7 +83,16 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
   This way you can exclude risk from all your project's (transitive) build and test dependencies, plus those
   from Maven/Gradle plugins that are not activated by publishing (if any?).
+
+* *How should I review the code, then?*  
+  I would start with [action.yaml](./action.yaml) and verify that only the ['src/main/java'](./src/main/java) code is included.  
   
+  Then I would go to the Action main class ([ActionNexusPublisher](./src/main/java/dk/mada/action/ActionNexusPublisher.java)) and just follow all branch points.  
+
+  Pay attention to handling of environment variables (where your secrets will be) and what gets printed to the console.  
+  Verify that no other external communication/execution happens that could leak the secrets.
+  
+  And obviously be suspicious of my guidance :)
 
 * *Are you really this paranoid?*  
   When it suits me.
@@ -92,10 +100,26 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 * *So you trust the JDK? GitHub?*  
   Well, your paranoia has to rest on a bedrock of *something*. Otherwise you will drown :)  
 
-  Yeah, I trust the JDK. And Temurin's build of it. And the `actions/setup-java` action, GitHub in general, and the Ubuntu runner they provide.  
+  Yeah, I trust the JDK. And the Temurin build of it. And the `actions/setup-java` action, GitHub in general, and the Ubuntu runner they provide.  
   Or I would have stayed in my cave.
 
-  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.
+  But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.  
+  In particular if you do not have full control how dependencies are added or changed over time.
+
+### Open Source vs Expectancy of Work
+
+This project is Open Source and I am happy for you to use the Action, report bugs and suggest changes.
+
+But while the source code is free, it does not come bundled with promises or guarantees of free work.
+
+I will try to fix reported bugs (if I agree with them), but will commit to no time tables.
+
+If you are itching to make some changes (to this repository), please open an issue first, so we can discuss.  
+I do not want you to waste your time!
+
+If this is not agreeable, you are more than welcome to fork the project and do your own thing.
+
+Open Source, Yay!
 
 
 ## Using the Action

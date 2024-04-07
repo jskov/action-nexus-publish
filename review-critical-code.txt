@@ -1,3 +1,0 @@
-ExternalCmdRunner:
- make sure the critical parts (stdin) are not printed
- 

@@ -81,22 +81,21 @@ public final class BundlePublisher {
                 .allMatch(brs -> brs.status() == Status.VALIDATED);
 
         ExecutedAction executedAction;
-        if (action == TargetAction.KEEP
-                || (action == TargetAction.PROMOTE_OR_KEEP && !allSucceeded)) {
-            logger.info("Keeping repositories");
-            if (!allSucceeded) {
-                logger.warning("NOTICE: not all repositories validated successfully!");
-            }
-            executedAction = ExecutedAction.KEPT;
+        if (allSucceeded && action == TargetAction.PROMOTE_OR_KEEP) {
+            logger.info("Promoting repositories...");
+            proxy.stagingAction("/service/local/staging/bulk/promote", repoIds);
+            executedAction = ExecutedAction.PROMOTED;
         } else if (action == TargetAction.DROP) {
             logger.info("Dropping repositories...");
             proxy.stagingAction("/service/local/staging/bulk/drop", repoIds);
             executedAction = ExecutedAction.DROPPED;
         } else {
-            logger.info("Publishing repositories...");
-            logger.warning("TODO: promote");
-            // https://s01.oss.sonatype.org/service/local/staging/bulk/promote
-            executedAction = ExecutedAction.PROMOTED;
+            // TargetAction.KEEP *or* failure so promotion cannot happen
+            logger.info("Keeping repositories");
+            if (!allSucceeded) {
+                logger.warning("NOTICE: not all repositories validated successfully!");
+            }
+            executedAction = ExecutedAction.KEPT;
         }
 
         logger.info("Done");
@@ -125,7 +124,7 @@ public final class BundlePublisher {
     public record PublishingResult(ExecutedAction executedAction, boolean allReposValid, List<BundleRepositoryState> finalStates) {
     }
 
-    // FIXME: include maven repo paths (repositoryURI from status)
+    // TODO: Should include maven repo paths (repositoryURI from status)
     private String makeSummary(List<BundleRepositoryState> initialBundleStates) {
         return " " + initialBundleStates.stream()
                 .map(bs -> bs.bundle().bundleJar().getFileName() + " repo:" + bs.assignedId() + ", status: " + bs.status)
@@ -143,7 +142,7 @@ public final class BundlePublisher {
         boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
-            int waitingSeconds = (int) waitMillis / 1000;
+            int waitingSeconds = waitMillis / 1000;
             logger.info(() -> " waiting " + waitingSeconds + " seconds for MavenCentral processing...");
             sleep(waitMillis);
             updatedStates = updatedStates.stream()
@@ -189,7 +188,6 @@ public final class BundlePublisher {
     private record RepositoryStateInfo(int notifications, boolean transitioning, String info) {
     }
 
-    // TODO: get status update time
     private RepositoryStateInfo parseRepositoryState(HttpResponse<String> response) {
         int status = response.statusCode();
         String body = response.body();

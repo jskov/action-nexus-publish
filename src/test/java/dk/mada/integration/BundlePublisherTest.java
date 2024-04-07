@@ -36,7 +36,7 @@ public class BundlePublisherTest {
      * Tests that a pom bundle can be published and dropped (without causing an explosion).
      */
     @Test
-    void canGo() throws IOException {
+    void canPublishAndDrop() throws IOException {
         String pomName = "action-maven-publish-test-0.0.0.pom";
         Files.copy(Paths.get("src/test/data").resolve(pomName), workDir.resolve(pomName));
 

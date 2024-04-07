@@ -67,13 +67,25 @@ public final class EphemeralCookieHandler {
             return List.copyOf(cookieOrigins.values());
         }
 
-        // TODO
+        /**
+         * Remove cookie. Currently an empty operation.
+         *
+         * @param uri    the uri this cookie associated with.
+         * @param cookie the cookie to remove
+         *
+         * @return {@code true} if this store contained the specified cookie
+         */
         @Override
         public boolean remove(URI uri, HttpCookie cookie) {
             logger.finest(() -> "cookie: remove uri:" + uri + ", name:" + cookie.getName());
             return false;
         }
 
+        /**
+         * Remove cookie. Currently an empty operation.
+         *
+         * @return {@code true} if this store changed as a result of the call
+         */
         @Override
         public boolean removeAll() {
             logger.finest("cookie: clear all");

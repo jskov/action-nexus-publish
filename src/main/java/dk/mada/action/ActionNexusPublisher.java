@@ -1,6 +1,7 @@
 package dk.mada.action;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import dk.mada.action.BundleCollector.Bundle;
@@ -34,8 +35,7 @@ public final class ActionNexusPublisher {
             // If all repositories were valid, this was a success. Regardless of the requested action.
             failed = !result.allReposValid();
         } catch (Exception e) {
-            logger.warning("Publisher failed initialization: " + e.getMessage());
-            e.printStackTrace();
+            logger.log(Level.WARNING, e, () -> "Publisher failed initialization: " + e.getMessage());
             failed = true;
         }
         if (failed) {
