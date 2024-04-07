@@ -81,22 +81,21 @@ public final class BundlePublisher {
                 .allMatch(brs -> brs.status() == Status.VALIDATED);
 
         ExecutedAction executedAction;
-        if (action == TargetAction.KEEP
-                || (action == TargetAction.PROMOTE_OR_KEEP && !allSucceeded)) {
-            logger.info("Keeping repositories");
-            if (!allSucceeded) {
-                logger.warning("NOTICE: not all repositories validated successfully!");
-            }
-            executedAction = ExecutedAction.KEPT;
+        if (allSucceeded && action == TargetAction.PROMOTE_OR_KEEP) {
+            logger.info("Promoting repositories...");
+            proxy.stagingAction("/service/local/staging/bulk/promote", repoIds);
+            executedAction = ExecutedAction.PROMOTED;
         } else if (action == TargetAction.DROP) {
             logger.info("Dropping repositories...");
             proxy.stagingAction("/service/local/staging/bulk/drop", repoIds);
             executedAction = ExecutedAction.DROPPED;
         } else {
-            logger.info("Publishing repositories...");
-            logger.warning("TODO: promote");
-            // https://s01.oss.sonatype.org/service/local/staging/bulk/promote
-            executedAction = ExecutedAction.PROMOTED;
+            // TargetAction.KEEP *or* failure so promotion cannot happen
+            logger.info("Keeping repositories");
+            if (!allSucceeded) {
+                logger.warning("NOTICE: not all repositories validated successfully!");
+            }
+            executedAction = ExecutedAction.KEPT;
         }
 
         logger.info("Done");
