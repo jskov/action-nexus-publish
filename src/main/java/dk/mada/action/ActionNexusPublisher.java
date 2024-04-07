@@ -35,7 +35,7 @@ public final class ActionNexusPublisher {
             // If all repositories were valid, this was a success. Regardless of the requested action.
             failed = !result.allReposValid();
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Publisher failed initialization: " + e.getMessage(), e);
+            logger.log(Level.WARNING, e, () -> "Publisher failed initialization: " + e.getMessage());
             failed = true;
         }
         if (failed) {
