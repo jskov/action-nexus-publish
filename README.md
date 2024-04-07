@@ -3,8 +3,6 @@
 
 This Action will [sign and publish](https://central.sonatype.org/publish/publish-manual/) Maven artifacts to [MavenCentral](https://central.sonatype.org/) for security aware (and/or paranoid) developers.
 
-**IT IS NOT READY YET**
-
 ## Simple(r) and Transparent
 
 The Action does the same as the publishing plugins of Maven and Gradle (or near enough).
@@ -57,6 +55,15 @@ These are **only** used for development. They are not used in the execution of t
 
 There are unit-tests which can be executed without context. 
 And there is a single integration-test which uploads a bundle to OSSRH (this needs credentials, so can only be run manually by someone providing said credentials).
+
+### Examples of Use
+
+I use this Action with my own (Gradle-based) repositories:
+
+ * https://github.com/jskov/mada-style-gradle
+ * https://github.com/jskov/openapi-jaxrs-client
+
+If you have an example of a Maven-based repository using this Action (and would not mind having it mentioned here), please give me a reference.
 
 ### FAQish
 
