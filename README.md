@@ -106,6 +106,19 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   But (in my optics, anyway) there is a large gap between the above and the sum of transitive dependencies included when developing an average application.  
   In particular if you do not have full control how dependencies are added or changed over time.
 
+### Open Source vs Expectancy of Work
+
+This project is Open Source and I am happy for you to use the Action, report bugs and suggest changes.
+
+But while the source code is free, it does not come bundled with promises or guarantees of free work.
+
+I will try to fix reported bugs (if I agree with them), but will commit to no time tables.
+
+If you are itching to make some changes (to this repository), please open an issue first, so we can discuss.  
+I do not want you to waste your time!
+
+If this is not agreeable, you are more than welcome to fork the project and do your own thing. Open Source, Yay!
+
 
 ## Using the Action
 
