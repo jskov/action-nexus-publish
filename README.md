@@ -117,7 +117,9 @@ I will try to fix reported bugs (if I agree with them), but will commit to no ti
 If you are itching to make some changes (to this repository), please open an issue first, so we can discuss.  
 I do not want you to waste your time!
 
-If this is not agreeable, you are more than welcome to fork the project and do your own thing. Open Source, Yay!
+If this is not agreeable, you are more than welcome to fork the project and do your own thing.
+
+Open Source, Yay!
 
 
 ## Using the Action
