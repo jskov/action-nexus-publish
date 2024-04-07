@@ -124,7 +124,7 @@ public final class BundlePublisher {
     public record PublishingResult(ExecutedAction executedAction, boolean allReposValid, List<BundleRepositoryState> finalStates) {
     }
 
-    // FIXME: include maven repo paths (repositoryURI from status)
+    // TODO: Should include maven repo paths (repositoryURI from status)
     private String makeSummary(List<BundleRepositoryState> initialBundleStates) {
         return " " + initialBundleStates.stream()
                 .map(bs -> bs.bundle().bundleJar().getFileName() + " repo:" + bs.assignedId() + ", status: " + bs.status)
