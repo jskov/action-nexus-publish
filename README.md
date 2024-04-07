@@ -48,7 +48,6 @@ According to [SonarCloud](https://sonarcloud.io/project/overview?id=jskov_action
 
 If you have written enough code to publish anything on MavenCentral, it should be a piece of cake to review.
 
-Also remember to have look at [action.yaml](./action.yaml) to verify that only the ['src/main/java'](./src/main/java) classes are used.
 
 ### Testing
 
@@ -84,7 +83,16 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
 
   This way you can exclude risk from all your project's (transitive) build and test dependencies, plus those
   from Maven/Gradle plugins that are not activated by publishing (if any?).
+
+* *How should I review the code, then?*  
+  I would start with [action.yaml](./action.yaml) and verify that only the ['src/main/java'](./src/main/java) code is included.  
   
+  Then I would go to the Action main class ([ActionNexusPublisher](./src/main/java/dk/mada/action/ActionNexusPublisher.java)) and just follow all branch points.  
+
+  Pay attention to handling of environment variables (where your secrets will be) and what gets printed to the console.  
+  And verify that no other external communication/execution happens that could leak the secrets.
+  
+  And obviously be suspicious of my guidance :)
 
 * *Are you really this paranoid?*  
   When it suits me.
