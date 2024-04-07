@@ -90,7 +90,7 @@ And there is a single integration-test which uploads a bundle to OSSRH (this nee
   Then I would go to the Action main class ([ActionNexusPublisher](./src/main/java/dk/mada/action/ActionNexusPublisher.java)) and just follow all branch points.  
 
   Pay attention to handling of environment variables (where your secrets will be) and what gets printed to the console.  
-  And verify that no other external communication/execution happens that could leak the secrets.
+  Verify that no other external communication/execution happens that could leak the secrets.
   
   And obviously be suspicious of my guidance :)
 
