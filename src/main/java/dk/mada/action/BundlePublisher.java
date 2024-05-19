@@ -31,7 +31,7 @@ public final class BundlePublisher {
 
     /**
      * Constructs a new instance.
-     * 
+     *
      * @param args  the action arguments
      * @param proxy the proxy to use for OSSRH access
      */
@@ -139,13 +139,13 @@ public final class BundlePublisher {
 
     private List<BundleRepositoryState> waitForRepositoriesToSettle(List<BundleRepositoryState> bundleStates) {
         int bundleCount = bundleStates.size();
-        int waitMillis = (int) initialProcessingPause.toMillis() * bundleCount;
+        Duration delay = initialProcessingPause.multipliedBy(bundleCount);
         boolean keepWaiting;
         List<BundleRepositoryState> updatedStates = bundleStates;
         do {
-            int waitingSeconds = waitMillis / 1000;
-            logger.info(() -> " waiting " + waitingSeconds + " seconds for MavenCentral processing...");
-            sleep(waitMillis);
+            String printDelay = delay.toString();
+            logger.info(() -> " waiting " + printDelay + " for MavenCentral processing...");
+            sleep(delay);
             updatedStates = updatedStates.stream()
                     .map(this::updateRepoState)
                     .toList();
@@ -155,7 +155,7 @@ public final class BundlePublisher {
             long bundlesInTransition = updatedStates.stream()
                     .filter(rs -> rs.status().isTransitioning())
                     .count();
-            waitMillis = (int) (loopPause.toMillis() * bundlesInTransition);
+            delay = loopPause.multipliedBy(bundlesInTransition);
             logger.info(() -> " (" + bundlesInTransition + " bundles still processing)");
 
             keepWaiting = bundlesInTransition > 0;
@@ -255,11 +255,11 @@ public final class BundlePublisher {
     /**
      * Sleep for a bit. Handles interruption (by failing).
      *
-     * @param millis the number of milliseconds to sleep
+     * @param duration the duration to sleep for
      */
-    private void sleep(int millis) {
+    private void sleep(Duration duration) {
         try {
-            Thread.sleep(millis);
+            Thread.sleep(duration);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while waiting for repository state change", e);

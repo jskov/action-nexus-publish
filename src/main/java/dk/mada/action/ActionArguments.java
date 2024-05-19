@@ -16,14 +16,14 @@ import dk.mada.action.BundlePublisher.TargetAction;
 /**
  * These are the arguments accepted by the action. Arguments are provided via environment variables.
  *
- * @param gpgCertificate     the private GPG certificate used for signing
- * @param searchDir          the directory to search for POM files
- * @param companionSuffixes  the companion suffixes to include when finding a POM file
- * @param logLevel           the logging level to use
- * @param ossrhCredentials   the OSSRH credentials
- * @param targetAction       the action to take after the bundles have been validated
- * @param intialPauseSeconds the pause (in seconds) to wait initially for each artifact
- * @param loopPauseSeconds   the pause (in seconds) to wait in each loop for each artifact still being processed
+ * @param gpgCertificate      the private GPG certificate used for signing
+ * @param searchDir           the directory to search for POM files
+ * @param companionSuffixes   the companion suffixes to include when finding a POM file
+ * @param logLevel            the logging level to use
+ * @param ossrhCredentials    the OSSRH credentials
+ * @param targetAction        the action to take after the bundles have been validated
+ * @param initialPauseSeconds the pause (in seconds) to wait initially for each artifact
+ * @param loopPauseSeconds    the pause (in seconds) to wait in each loop for each artifact still being processed
  */
 public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, List<String> companionSuffixes,
         Level logLevel, OssrhCredentials ossrhCredentials, TargetAction targetAction, long initialPauseSeconds,

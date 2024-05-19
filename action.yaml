@@ -48,6 +48,16 @@ inputs:
       - fine
       - finest
 
+  initial_pause:
+    required: false
+    description: "The per-asset initial pause (in seconds) before polling for completion state changes."
+    default: "30"
+
+  loop_pause:
+    required: false
+    description: "The per-asset loop pause (in seconds) between polling for completion state changes."
+    default: "15"
+
 runs:
   using: "composite"
   steps:
@@ -73,3 +83,5 @@ runs:
         OSSRH_USERNAME: ${{ inputs.ossrh_username }}
         OSSRH_TOKEN: ${{ inputs.ossrh_token }}
         TARGET_ACTION: ${{ inputs.target_action }}
+        INITIAL_PAUSE: ${{ inputs.initial_pause }}
+        LOOP_PAUSE: ${{ inputs.loop_pause }}
