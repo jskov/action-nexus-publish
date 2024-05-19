@@ -79,7 +79,7 @@ If you have an example of a Maven-based repository using this Action (and would 
   But while shell script is a more simple and common "language" (than javascript/java), I believe there are still a lot
   of java developers that would prefer to review java code.
 
-* *Why is this action not published on the Marketplace? Seems fishy!*
+* *Why is this action not published on the Marketplace? Seems fishy!*  
   Yeah, well, I think the same (fishy) of the [GitHub Marketplace Developer Agreement](https://docs.github.com/en/site-policy/github-terms/github-marketplace-developer-agreement).
   
   As far as I can tell (and I am a programmer, not a lawyer, mind you), those 35kB of legalese are there to protect the Marketplace from idiots.  
