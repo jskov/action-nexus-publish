@@ -153,6 +153,8 @@ Publishing Maven artifacts to Maven Central.
 | ossrh_token        | The OSSRH token | `true` | |
 | target_action      | The action to take for bundles after upload (drop/keep/promote_or_keep) | `false` | keep |
 | log_level          | Log level (for JUL framework) (info/fine/finest) | `false` | info |
+| initial_pause      | The per-bundle initial pause (in seconds) before polling for completion state changes | `false` | 30 |
+| loop_pause         | The per-bundle loop pause (in seconds) between polling for completion state changes | `false` | 15 |
 
 <!-- action-docs-inputs -->
 
@@ -176,6 +178,10 @@ For each pom-file a bundle is created. The bundle contains the pom-file and comp
 The bundle files are packaged into a jar-file which is signed using GPG (with `signing_key`/`signing_key_secret`).
 
 Then the bundle jar-files are uploaded to OSSRH using `ossrh_username`/`ossrh_token`.
+
+After all bundles are uploaded, a loop is entered waiting for all the bundles to be processed on OSSRH.
+The loop is entered after an initial delay, and the is a delay after each loop. Both configured in seconds, and multiplied by the number of bundles.
+Reducing the loop delay does not increase processing speed - it just results in additional calls.
 
 Finally, all the uploaded bundles are dropped/kept/promoted according to `target_action`.
 Note that if any of the bundles fail validation, 'promote' will fall back to 'keep' (hence 'promote_or_keep').

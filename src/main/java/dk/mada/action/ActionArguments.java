@@ -22,8 +22,8 @@ import dk.mada.action.BundlePublisher.TargetAction;
  * @param logLevel            the logging level to use
  * @param ossrhCredentials    the OSSRH credentials
  * @param targetAction        the action to take after the bundles have been validated
- * @param initialPauseSeconds the pause (in seconds) to wait initially for each artifact
- * @param loopPauseSeconds    the pause (in seconds) to wait in each loop for each artifact still being processed
+ * @param initialPauseSeconds the pause (in seconds) to wait initially for each bundle
+ * @param loopPauseSeconds    the pause (in seconds) to wait in each loop for each bundle still being processed
  */
 public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, List<String> companionSuffixes,
         Level logLevel, OssrhCredentials ossrhCredentials, TargetAction targetAction, long initialPauseSeconds,

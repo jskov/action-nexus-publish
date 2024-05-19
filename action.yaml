@@ -50,13 +50,13 @@ inputs:
 
   initial_pause:
     required: false
-    description: "The per-asset initial pause (in seconds) before polling for completion state changes."
-    default: "30"
+    description: "The per-bundle initial pause (in seconds) before polling for completion state changes."
+    default: 30
 
   loop_pause:
     required: false
-    description: "The per-asset loop pause (in seconds) between polling for completion state changes."
-    default: "15"
+    description: "The per-bundle loop pause (in seconds) between polling for completion state changes."
+    default: 15
 
 runs:
   using: "composite"
