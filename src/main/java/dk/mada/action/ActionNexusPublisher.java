@@ -14,6 +14,11 @@ import dk.mada.action.util.LoggerConfig;
 public final class ActionNexusPublisher {
     private static Logger logger = Logger.getLogger(ActionNexusPublisher.class.getName());
 
+    /** Constructs new instance. */
+    public ActionNexusPublisher() {
+        // Explicit constructor to avoid javadoc warning
+    }
+
     /**
      * Runs action, taking instructions from environment.
      */

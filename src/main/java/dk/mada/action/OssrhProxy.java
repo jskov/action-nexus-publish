@@ -68,7 +68,7 @@ public class OssrhProxy {
      *
      * @param path    the url path to read from
      * @param headers headers to use (paired values)
-     * @return the response
+     * @return the http response
      */
     public HttpResponse<String> get(String path, String... headers) {
         authenticate();
@@ -79,6 +79,7 @@ public class OssrhProxy {
      * Uploads bundle.
      *
      * @param bundle the bundle to upload
+     * @return the http response
      */
     public HttpResponse<String> uploadBundle(Bundle bundle) {
         authenticate();
@@ -92,6 +93,7 @@ public class OssrhProxy {
      *
      * @param path    the url path to push to
      * @param repoIds a list of repositories IDs to include in the payload
+     * @return the http response
      */
     public HttpResponse<String> stagingAction(String path, List<String> repoIds) {
         String idList = repoIds.stream()
