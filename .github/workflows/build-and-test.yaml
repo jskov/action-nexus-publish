@@ -39,8 +39,15 @@ jobs:
         with:
           validate-wrappers: true
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Run tests
-        run: ./gradlew classes check javadoc -s
+        run: ./gradlew classes check javadoc sonar -s
 
       - name: Capture junit reports
         uses: actions/upload-artifact@v4
