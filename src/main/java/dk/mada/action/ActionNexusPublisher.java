@@ -26,7 +26,7 @@ public final class ActionNexusPublisher {
         try (GpgSigner signer = new GpgSigner(args.gpgCertificate())) {
             BundleCollector bundleBuilder = new BundleCollector(signer);
             OssrhProxy proxy = new OssrhProxy(args.ossrhCredentials());
-            BundlePublisher bundlePublisher = new BundlePublisher(proxy);
+            BundlePublisher bundlePublisher = new BundlePublisher(args, proxy);
             signer.loadSigningCertificate();
 
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());

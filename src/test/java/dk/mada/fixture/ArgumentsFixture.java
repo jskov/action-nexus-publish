@@ -30,7 +30,7 @@ public final class ArgumentsFixture {
         OssrhCredentials ossrhCreds = ossrhCreds();
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
-        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds, TargetAction.DROP);
+        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds, TargetAction.DROP, 30, 10);
     }
 
     /** {@return GPG test certificate} */

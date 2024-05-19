@@ -31,13 +31,14 @@ public final class BundlePublisher {
 
     /**
      * Constructs a new instance.
-     *
+     * 
+     * @param args  the action arguments
      * @param proxy the proxy to use for OSSRH access
      */
-    public BundlePublisher(OssrhProxy proxy) {
+    public BundlePublisher(ActionArguments args, OssrhProxy proxy) {
         this.proxy = proxy;
-        initialProcessingPause = Duration.ofSeconds(60);
-        loopPause = Duration.ofSeconds(15);
+        initialProcessingPause = Duration.ofSeconds(args.initialPauseSeconds());
+        loopPause = Duration.ofSeconds(args.loopPauseSeconds());
     }
 
     /**

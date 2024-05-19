@@ -16,15 +16,18 @@ import dk.mada.action.BundlePublisher.TargetAction;
 /**
  * These are the arguments accepted by the action. Arguments are provided via environment variables.
  *
- * @param gpgCertificate    the private GPG certificate used for signing
- * @param searchDir         the directory to search for POM files
- * @param companionSuffixes the companion suffixes to include when finding a POM file
- * @param logLevel          the logging level to use
- * @param ossrhCredentials  the OSSRH credentials
- * @param targetAction      the action to take after the bundles have been validated
+ * @param gpgCertificate     the private GPG certificate used for signing
+ * @param searchDir          the directory to search for POM files
+ * @param companionSuffixes  the companion suffixes to include when finding a POM file
+ * @param logLevel           the logging level to use
+ * @param ossrhCredentials   the OSSRH credentials
+ * @param targetAction       the action to take after the bundles have been validated
+ * @param intialPauseSeconds the pause (in seconds) to wait initially for each artifact
+ * @param loopPauseSeconds   the pause (in seconds) to wait in each loop for each artifact still being processed
  */
 public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, List<String> companionSuffixes,
-        Level logLevel, OssrhCredentials ossrhCredentials, TargetAction targetAction) {
+        Level logLevel, OssrhCredentials ossrhCredentials, TargetAction targetAction, long initialPauseSeconds,
+        long loopPauseSeconds) {
 
     /** Argument validation. */
     public ActionArguments {
@@ -112,8 +115,10 @@ public record ActionArguments(GpgCertificate gpgCertificate, Path searchDir, Lis
                 .toList();
         Path searchDir = Paths.get(getRequiredEnv("SEARCH_DIR"));
         Level logLevel = Level.parse(getRequiredEnv("LOG_LEVEL").toUpperCase(Locale.ROOT));
+        long initialPause = Long.parseLong(getRequiredEnv("INITIAL_PAUSE"));
+        long loopPause = Long.parseLong(getRequiredEnv("LOOP_PAUSE"));
         TargetAction targetAction = TargetAction.valueOf(getRequiredEnv("TARGET_ACTION").toUpperCase(Locale.ROOT));
-        return new ActionArguments(gpgCert, searchDir, suffixes, logLevel, ossrhCreds, targetAction);
+        return new ActionArguments(gpgCert, searchDir, suffixes, logLevel, ossrhCreds, targetAction, initialPause, loopPause);
     }
 
     /**
