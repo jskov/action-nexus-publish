@@ -83,7 +83,7 @@ If you have an example of a Maven-based repository using this Action (and would 
   Yeah, well, I think the same (fishy) of the [GitHub Marketplace Developer Agreement](https://docs.github.com/en/site-policy/github-terms/github-marketplace-developer-agreement).
   
   As far as I can tell (and I am a programmer, not a lawyer, mind you), those 35kB of legalese are there to protect the Marketplace from idiots.  
-  But being in the Marketplace adds nothing to an action (that I can tell), except being in the Marketplace's searchable index.
+  But being in the Marketplace adds nothing to an action (that I can tell), except being in the Marketplace's searchable index. Where it will drown anyway.
 
   Since this action is primarily here because of (to the benefit of) me, I have already reached my target audience.  
   So hard pass on the extraneous legalese.
