@@ -153,7 +153,7 @@ Publishing Maven artifacts to Maven Central.
 | ossrh_token        | The OSSRH token | `true` | |
 | target_action      | The action to take for bundles after upload (drop/keep/promote_or_keep) | `false` | keep |
 | log_level          | Log level (for JUL framework) (info/fine/finest) | `false` | info |
-| initial_pause      | The per-bundle initial pause (in seconds) before polling for completion state changes | `false` | 30 |
+| initial_pause      | The per-bundle initial pause (in seconds) before polling for completion state changes | `false` | 45 |
 | loop_pause         | The per-bundle loop pause (in seconds) between polling for completion state changes | `false` | 15 |
 
 <!-- action-docs-inputs -->

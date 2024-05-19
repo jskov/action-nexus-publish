@@ -51,7 +51,7 @@ inputs:
   initial_pause:
     required: false
     description: "The per-bundle initial pause (in seconds) before polling for completion state changes."
-    default: 30
+    default: 45
 
   loop_pause:
     required: false
