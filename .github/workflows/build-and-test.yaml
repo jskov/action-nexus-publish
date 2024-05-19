@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Allows sonar to collect blame information
 
       - name: Set build version
         # Cannot use ${BUILD_LABEL} with gradle-build-action, so stuff version
