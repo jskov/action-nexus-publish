@@ -20,13 +20,13 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Allows sonar to collect blame information
 
       - name: Set build version
         # Cannot use ${BUILD_LABEL} with gradle-build-action, so stuff version
@@ -34,8 +34,8 @@ jobs:
         run: sed -i 's/^version.*/version = '${BUILD_LABEL}'/;' ./gradle.properties
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@6cec5d49d4d6d4bb982fbed7047db31ea6d38f11
-        # v3.3.0
+        uses: gradle/actions/setup-gradle@db19848a5fa7950289d3668fb053140cf3028d43
+        # v3.3.2
         with:
           validate-wrappers: true
 
