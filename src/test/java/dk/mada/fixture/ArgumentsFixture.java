@@ -20,6 +20,11 @@ import dk.mada.action.util.LoggerConfig;
  * Fixture for creating action arguments for tests.
  */
 public final class ArgumentsFixture {
+    /** The initial delay before polling for change during testing. */
+    private static final long INITIAL_DELAY = 30;
+    /** The loop delay before polling for change during testing. */
+    private static final long LOOP_DELAY = 10;
+
     private ArgumentsFixture() {
     }
 
@@ -30,7 +35,8 @@ public final class ArgumentsFixture {
         OssrhCredentials ossrhCreds = ossrhCreds();
         Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
         List<String> emptySuffixes = List.of();
-        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds, TargetAction.DROP);
+        return new ActionArguments(gpgCert(), tmpDir, emptySuffixes, Level.FINEST, ossrhCreds, TargetAction.DROP, INITIAL_DELAY,
+                LOOP_DELAY);
     }
 
     /** {@return GPG test certificate} */

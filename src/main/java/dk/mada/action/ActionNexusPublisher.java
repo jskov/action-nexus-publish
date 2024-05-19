@@ -14,6 +14,11 @@ import dk.mada.action.util.LoggerConfig;
 public final class ActionNexusPublisher {
     private static Logger logger = Logger.getLogger(ActionNexusPublisher.class.getName());
 
+    /** Constructs new instance. */
+    public ActionNexusPublisher() {
+        // Explicit constructor to avoid javadoc warning
+    }
+
     /**
      * Runs action, taking instructions from environment.
      */
@@ -26,7 +31,7 @@ public final class ActionNexusPublisher {
         try (GpgSigner signer = new GpgSigner(args.gpgCertificate())) {
             BundleCollector bundleBuilder = new BundleCollector(signer);
             OssrhProxy proxy = new OssrhProxy(args.ossrhCredentials());
-            BundlePublisher bundlePublisher = new BundlePublisher(proxy);
+            BundlePublisher bundlePublisher = new BundlePublisher(args, proxy);
             signer.loadSigningCertificate();
 
             List<Bundle> bundles = bundleBuilder.collectBundles(args.searchDir(), args.companionSuffixes());

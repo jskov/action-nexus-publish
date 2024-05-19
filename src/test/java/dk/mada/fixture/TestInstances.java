@@ -49,7 +49,7 @@ public final class TestInstances {
     /** {@return an initialized bundle publisher instance} */
     public static BundlePublisher bundlePublisher() {
         if (bundlePublisher == null) {
-            bundlePublisher = new BundlePublisher(ossrhProxy());
+            bundlePublisher = new BundlePublisher(ArgumentsFixture.withGpg(), ossrhProxy());
         }
         return bundlePublisher;
     }
