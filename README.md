@@ -180,8 +180,8 @@ The bundle files are packaged into a jar-file which is signed using GPG (with `s
 Then the bundle jar-files are uploaded to OSSRH using `ossrh_username`/`ossrh_token`.
 
 After all bundles are uploaded, a loop is entered waiting for all the bundles to be processed on OSSRH.
-The loop is entered after an initial delay, and the is a delay after each loop. Both configured in seconds, and multiplied by the number of bundles.
-Reducing the loop delay does not increase processing speed - it just results in additional calls.
+The loop is entered after an initial delay, and there is a delay after each loop round. Both configured in seconds, and multiplied by the number of bundles.
+Reducing the loop delay does not increase processing speed - it just results in more polling.
 
 Finally, all the uploaded bundles are dropped/kept/promoted according to `target_action`.
 Note that if any of the bundles fail validation, 'promote' will fall back to 'keep' (hence 'promote_or_keep').
